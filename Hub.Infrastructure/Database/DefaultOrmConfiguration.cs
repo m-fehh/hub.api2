@@ -1,76 +1,57 @@
-﻿using Hub.Domain;
-using Hub.Infrastructure.Database.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Hub.Infrastructure.Database.Interfaces;
+using Hub.Infrastructure.MultiTenant.Interfaces;
+using Microsoft.Data.SqlClient;
 
 namespace Hub.Infrastructure.Database
 {
     public class DefaultOrmConfiguration : IOrmConfiguration
     {
-        public void Configure(ConnectionStringBaseVM config)
-        {
-            string connectionString = config?.ConnectionString ?? GetConnectionString();
+        private readonly ITenantManager _tenantManager;
 
-            var serviceProvider = new ServiceCollection().AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString)).BuildServiceProvider();
+        public DefaultOrmConfiguration(ITenantManager tenantManager)
+        {
+            _tenantManager = tenantManager;
+        }
+
+        public void Configure()
+        {
+            string connectionString = GetConnectionString();
+
+            // Captura todos os schemas (tenants) disponíveis
+            var schemas = GetAvailableSchemas(connectionString);
+
+            // Inicializa o TenantManager com os schemas capturados
+            _tenantManager.InitializeTenants(schemas);
+        }
+
+        public void ConfigureTenant(string tenantSchema, ConnectionStringBaseVM config)
+        {
+            // Configura o schema do tenant logado
+            _tenantManager.SetCurrentSchema(tenantSchema);
         }
 
         private string GetConnectionString()
         {
             return Engine.ConnectionString("DefaultConnection");
         }
+
+        private List<string> GetAvailableSchemas(string connectionString)
+        {
+            var schemas = new List<string>();
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand(
+                    "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA", connection);
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        schemas.Add(reader.GetString(0));
+                    }
+                }
+            }
+            return schemas;
+        }
     }
 }
-
-
-
-
-//using (var context = serviceProvider.GetService<ApplicationDbContext>())
-//{
-//    // Cria o banco de dados se ele não existir
-//    context.Database.EnsureCreated();
-
-//    // Verifica se a tabela 'tenants' existe
-//    if (!context.Tenants.Any())
-//    {
-//        // Se a tabela estiver vazia, cria um tenant fake
-//        var defaultTenant = new Tenant
-//        {
-//            Name = "Trainly Base",
-//            Subdomain = "system",
-//            IsActive = true,
-//            CultureName = "pt-BR"
-//        };
-
-//        context.Tenants.Add(defaultTenant);
-//        context.SaveChanges();
-//    }
-
-//    // Recupera todos os tenants existentes
-//    var tenants = context.Tenants.ToList();
-
-//    foreach (var tenant in tenants)
-//    {
-//        // Aqui você pode realizar a configuração específica para cada tenant
-//        using (Engine.BeginLifetimeScope(tenant.Subdomain))
-//        {
-//            using (Engine.BeginIgnoreTenantConfigs(false))
-//            {
-//                var cs = Engine.ConnectionString("default");
-
-//                // Adiciona as configurações específicas para o tenant
-//                var tenantConfig = new NhConfigurationData
-//                {
-//                    TenantId = tenant.Subdomain,
-//                    ConnectionString = cs,
-//                    ConnectionProvider = "NHibernate.Connection.DriverConnectionProvider",  // Pode ser ajustado conforme a necessidade
-//                    ConnectionDriver = "NHibernate.Driver.MicrosoftDataSqlClientDriver",  // Pode ser ajustado conforme a necessidade
-//                    Dialect = "Hub.Infrastructure.Database.NhManagement.FMKSQLDIalect, Hub.Infrastructure", // Pode ser ajustado conforme a necessidade
-//                    CurrentSessionContext = "async_local",
-//                    UseSecondLevelCache = "false",
-//                    UseQueryCache = "false",
-//                    SchemaDefault = $"{tenant.Subdomain}",
-//                    CacheProvider = "CoreDistributedCacheProvider"
-//                };
-//            }
-//        }
-//    }

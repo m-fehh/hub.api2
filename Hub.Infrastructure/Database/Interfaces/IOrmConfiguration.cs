@@ -2,6 +2,6 @@
 {
     public interface IOrmConfiguration
     {
-        void Configure(ConnectionStringBaseVM config);
+        void Configure();
     }
 }

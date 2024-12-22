@@ -5,7 +5,10 @@ namespace Hub.Infrastructure.DependencyInjection
 {
     public class DependencyRegistration : IDependencyConfiguration
     {
-        public void Register(ContainerBuilder builder) { }
+        public void Register(ContainerBuilder builder) 
+        {
+
+        }
 
         public int Order
         {

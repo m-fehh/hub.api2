@@ -13,21 +13,26 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Configuration;
+using Hub.Infrastructure.MultiTenant.Interfaces;
 
 namespace Hub.Infrastructure
 {
     public static class Engine
     {
         public static IContainer Container { get; set; }
-        private static ContainerManager _containerManager;
         public static Assembly ExecutingAssembly { get; private set; }
-        private static Action initializeAction = null;
-
         public static AsyncLocal<ILifetimeScope> CurrentScope = new AsyncLocal<ILifetimeScope>();
-
+        //private static AsyncLocal<LifetimeScopeDispose> currentScopeDisposer = new AsyncLocal<LifetimeScopeDispose>();
+        public static AsyncLocal<bool> IgnoreTenantConfigsScope = new AsyncLocal<bool>();
+        private static ContainerManager _containerManager;
         private static ILocalizationProvider _localizationProvider;
         private static List<IAutoMapperStartup> _autoMapperStartups;
 
+        //private static object appSettingsLock = new object();
+        private static Action initializeAction = null;
+
+
+        private static ITenantManager _tenantManager; 
 
         class LifetimeScopeDispose : IDisposable
         {
@@ -56,7 +61,7 @@ namespace Hub.Infrastructure
         public static void SetContainer(IContainer container)
         {
             _containerManager.Container = container;
-
+            _tenantManager = container.Resolve<ITenantManager>(); 
             initializeAction();
         }
 
@@ -85,7 +90,7 @@ namespace Hub.Infrastructure
                 dependencyRegistrars = new List<IDependencyConfiguration>();
             }
 
-            dependencyRegistrars.Add(new DependencyRegistration());
+            dependencyRegistrars.Add(new DependencyConfiguration());
 
             _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
 
@@ -112,13 +117,24 @@ namespace Hub.Infrastructure
 
                 if (TryResolve(out ormConfiguration))
                 {
-                    ormConfiguration.Configure(csb);
+                    ormConfiguration.Configure();
                 }
             });
 
             if (_containerManager.Container != null)
             {
                 initializeAction();
+            }
+        }
+
+        // Função para configurar o tenant após o login
+        public static void SetTenantSchema(string tenantSchema)
+        {
+            if (_tenantManager != null)
+            {
+                _tenantManager.SetCurrentSchema(tenantSchema);
+                // Aqui podemos chamar o método que ajusta o contexto para o tenant logado
+                // Exemplo: Atualizar a string de conexão ou configurar o cache do EF
             }
         }
 
