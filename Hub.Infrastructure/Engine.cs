@@ -14,6 +14,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Configuration;
 using Hub.Infrastructure.MultiTenant.Interfaces;
+using System.Collections.Specialized;
+using Hub.Infrastructure.Extensions;
 
 namespace Hub.Infrastructure
 {
@@ -27,6 +29,7 @@ namespace Hub.Infrastructure
         private static ContainerManager _containerManager;
         private static ILocalizationProvider _localizationProvider;
         private static List<IAutoMapperStartup> _autoMapperStartups;
+        private static object appSettingsLock = new object();
 
         //private static object appSettingsLock = new object();
         private static Action initializeAction = null;
@@ -140,7 +143,157 @@ namespace Hub.Infrastructure
 
         public static string ConnectionString(string settingName)
         {
-            return ConfigurationManager.ConnectionStrings[settingName]?.ConnectionString;
+            var connectionString = ConfigurationManager.ConnectionStrings[settingName];
+
+            if (connectionString != null)
+                return connectionString.ConnectionString;
+            else
+            {
+                var key = AppSettings[$"ConnectionString-{settingName}"];
+
+                if (key != null)
+                {
+                    return key;
+                }
+
+                return Environment.GetEnvironmentVariable($"ConnectionString-{settingName}");
+            }
+        }
+
+        static NameValueCollection ConfigCollection = null;
+
+        static Dictionary<string, NameValueCollection> TenantConfigCollection = new Dictionary<string, NameValueCollection>();
+
+        static AsyncLocal<NameValueCollection> AsyncLocalConfigCollection = new AsyncLocal<NameValueCollection>();
+
+        public static NameValueCollection AppSettings
+        {
+            get
+            {
+                if (ConfigCollection == null)
+                {
+                    lock (appSettingsLock)
+                    {
+                        if (ConfigCollection == null)
+                        {
+                            NameValueCollection all;
+
+                            if (ConfigurationManager.AppSettings.Keys.Count != 0)
+                            {
+                                all = new NameValueCollection(ConfigurationManager.AppSettings);
+                            }
+                            else
+                            {
+                                all = new NameValueCollection(Environment.GetEnvironmentVariables().ToNameValueCollection());
+                            }
+
+                            // Aplicar chaves de debug (substituir qualquer chave quando em modo Debug)
+                            // Exemplo de chave no appsettings.json: "Debug:elos-api-endpoint"
+                            foreach (var debugKey in all.AllKeys.Where(a => a.StartsWith("Debug:")))
+                            {
+                                var originalKey = debugKey.Replace("Debug:", "");
+
+                                if (all.AllKeys.Contains(originalKey))
+                                {
+                                    all[originalKey] = all[debugKey];
+                                }
+                                else
+                                {
+                                    all.Add(originalKey, all[debugKey]);
+                                }
+                            }
+
+                            ConfigCollection = all;
+                        }
+                    }
+                }
+
+                string tenantName = "";
+
+                //if (ContainerManager?.Container != null && IgnoreTenantConfigsScope.Value == false)
+                //{
+                //    tenantName = Singleton<ISchemaNameProvider>.Instance.TenantName();
+
+                //    if (tenantName.Equals("system", StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        tenantName = "";
+                //    }
+                //}
+
+                if (!string.IsNullOrEmpty(tenantName))
+                {
+                    if (!TenantConfigCollection.ContainsKey(tenantName))
+                    {
+                        lock (appSettingsLock)
+                        {
+                            if (!TenantConfigCollection.ContainsKey(tenantName))
+                            {
+                                // Carregar configurações específicas do tenant a partir do appsettings
+                                var tenantPrefix = $"{tenantName}:";
+                                var tenantSettings = ConfigurationManager.AppSettings
+                                    .AllKeys
+                                    .Where(k => k.StartsWith(tenantPrefix, StringComparison.OrdinalIgnoreCase))
+                                    .ToDictionary(
+                                        k => k.Substring(tenantPrefix.Length),
+                                        k => ConfigurationManager.AppSettings[k]
+                                    );
+
+                                var all = new NameValueCollection(ConfigCollection);
+
+                                foreach (var kvp in tenantSettings)
+                                {
+                                    all[kvp.Key] = kvp.Value;
+                                }
+
+                                // Aplicar chaves de debug para o tenant
+                                foreach (var debugKey in all.AllKeys.Where(a => a.StartsWith("Debug:")))
+                                {
+                                    var originalKey = debugKey.Replace("Debug:", "");
+
+                                    if (all.AllKeys.Contains(originalKey))
+                                    {
+                                        all[originalKey] = all[debugKey];
+                                    }
+                                    else
+                                    {
+                                        all.Add(originalKey, all[debugKey]);
+                                    }
+                                }
+
+                                TenantConfigCollection.Add(tenantName, all);
+                            }
+                        }
+                    }
+
+                    if (AsyncLocalConfigCollection.Value != null)
+                    {
+                        var all = new NameValueCollection(TenantConfigCollection[tenantName]);
+
+                        foreach (string key in AsyncLocalConfigCollection.Value)
+                        {
+                            all[key] = AsyncLocalConfigCollection.Value[key];
+                        }
+
+                        return all;
+                    }
+
+                    return TenantConfigCollection[tenantName];
+                }
+
+                if (AsyncLocalConfigCollection.Value != null)
+                {
+                    var all = new NameValueCollection(ConfigCollection);
+
+                    foreach (string key in AsyncLocalConfigCollection.Value)
+                    {
+                        all[key] = AsyncLocalConfigCollection.Value[key];
+                    }
+
+                    return all;
+                }
+
+                return ConfigCollection;
+            }
         }
 
         #region RESOLVE 

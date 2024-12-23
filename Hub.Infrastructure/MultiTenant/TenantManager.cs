@@ -4,37 +4,31 @@ namespace Hub.Infrastructure.MultiTenant
 {
     public class TenantManager : ITenantManager
     {
-        private List<string> _schemas = new();
         private string _currentSchema;
+        private List<string> _availableSchemas;
 
+        // Inicializa os schemas disponíveis
         public void InitializeTenants(List<string> schemas)
         {
-            _schemas = schemas;
+            _availableSchemas = schemas;
         }
 
+        // Configura o schema do tenant corrente
         public void SetCurrentSchema(string schema)
         {
-            if (!_schemas.Contains(schema))
-            {
-                throw new ArgumentException($"Schema '{schema}' não encontrado na lista de tenants disponíveis.");
-            }
-
             _currentSchema = schema;
         }
 
+        // Obtém o schema do tenant corrente
         public string GetCurrentSchema()
         {
-            if (string.IsNullOrEmpty(_currentSchema))
-            {
-                throw new InvalidOperationException("Nenhum schema foi configurado.");
-            }
-
             return _currentSchema;
         }
 
-        public List<string> GetAllSchemas()
+        // Obtém todos os schemas disponíveis
+        public List<string> GetAvailableSchemas()
         {
-            return _schemas;
+            return _availableSchemas;
         }
     }
 }
