@@ -4,8 +4,6 @@ using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Infrastructure;
 using System.Reflection;
 using Hub.Application.Configurations;
-using Hub.Infrastructure.Database;
-using Microsoft.Extensions.Configuration;
 using Hub.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);

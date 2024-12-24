@@ -14,6 +14,9 @@ using Hub.Infrastructure.MultiTenant;
 using Autofac.Core;
 using Hub.Infrastructure.Localization.Interfaces;
 using System.Globalization;
+using Hub.Infrastructure.Database.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Hub.Infrastructure
 {
@@ -139,8 +142,44 @@ namespace Hub.Infrastructure
         }
 
 
+        //[MethodImpl(MethodImplOptions.Synchronized)]
+        //public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
+        //{
+        //    ExecutingAssembly = executingAssembly;
+
+        //    JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+        //    {
+        //        TypeNameHandling = TypeNameHandling.Auto
+        //    };
+
+        //    dependencyRegistrars ??= new List<IDependencyConfiguration>();
+        //    dependencyRegistrars.Add(new DependencyConfiguration());
+
+        //    _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
+
+        //    if (_autoMapperStartups?.Count > 0)
+        //    {
+        //        var config = new MapperConfiguration(cfg =>
+        //        {
+        //            Engine.RunAutoMapperStartups(cfg);
+        //        });
+
+        //        Singleton<IMapper>.Instance = config.CreateMapper();
+        //    }
+
+        //    if (_containerManager.Container != null)
+        //    {
+        //        _containerManager.Container.Resolve<IMapper>();
+        //    }
+        //}
+
+        // ISchemaNameProvider nameProvider = null, 
+
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
+        public static void Initialize(
+            Assembly executingAssembly,
+            IList<IDependencyConfiguration> dependencyRegistrars = null,
+            ContainerBuilder containerBuilder = null)
         {
             ExecutingAssembly = executingAssembly;
 
@@ -149,29 +188,75 @@ namespace Hub.Infrastructure
                 TypeNameHandling = TypeNameHandling.Auto
             };
 
-            dependencyRegistrars ??= new List<IDependencyConfiguration>();
+            if (dependencyRegistrars == null)
+            {
+                dependencyRegistrars = new List<IDependencyConfiguration>();
+            }
+
             dependencyRegistrars.Add(new DependencyConfiguration());
 
             _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
 
-            if (_autoMapperStartups?.Count > 0)
+            _initializeAction = new Action(() =>
             {
-                var config = new MapperConfiguration(cfg =>
-                {
-                    Engine.RunAutoMapperStartups(cfg);
-                });
+                TryResolve(out _localizationProvider);
 
-                Singleton<IMapper>.Instance = config.CreateMapper();
-            }
+                // Registrar suporte a múltiplos tenants
+                var services = new ServiceCollection();
+                services.AddTenantSupport();
+
+
+                // Montar o provedor de serviços
+                var serviceProvider = services.BuildServiceProvider();
+
+                // Obter os tenants ativos
+                var tenantOptions = serviceProvider.GetRequiredService<TenantConfigurationOptions>();
+
+                // Exemplo de uso dos tenants
+                foreach (var tenant in tenantOptions.Tenants)
+                {
+                    Console.WriteLine($"Tenant ativo: {tenant.Name} - {tenant.ConnectionString}");
+                }
+            });
 
             if (_containerManager.Container != null)
             {
-                _containerManager.Container.Resolve<IMapper>();
+                _initializeAction();
+            }
+        }
+
+
+        public static IDisposable BeginIgnoreTenantConfigs(bool ignoreTenantConfigs = true)
+        {
+            return new IgnoreTenantConfigScopeDisposable(ignoreTenantConfigs);
+        }
+
+        public static AsyncLocal<bool> IgnoreTenantConfigsScope = new AsyncLocal<bool>();
+
+        class IgnoreTenantConfigScopeDisposable : IDisposable
+        {
+            private bool originalValue;
+
+            public IgnoreTenantConfigScopeDisposable()
+            {
+                originalValue = IgnoreTenantConfigsScope.Value;
+                IgnoreTenantConfigsScope.Value = true;
+            }
+
+            public IgnoreTenantConfigScopeDisposable(bool ignoreValue)
+            {
+                originalValue = IgnoreTenantConfigsScope.Value;
+                IgnoreTenantConfigsScope.Value = ignoreValue;
+            }
+
+            public void Dispose()
+            {
+                IgnoreTenantConfigsScope.Value = originalValue;
             }
         }
 
         // Iniciar o escopo para o tenant
-        public static IDisposable BeginTenantScope(string tenant)
+        public static IDisposable BeginLifetimeScope(string tenant)
         {
             // Inicia o escopo do tenant e configura o contexto
             TenantContext.BeginScope(tenant);
