@@ -11,9 +11,7 @@
         {
             _model = new ConnectionStringBaseVM()
             {
-                //ConnectionStringBaseSchema = Engine.AppSettings["ConnectionStringBaseSchema"],
-                //ConnectionString = Engine.AppSettings["ConnectionString"] 
-                
+               
                 ConnectionStringBaseSchema = "Sch",
                 ConnectionString = ""
             };

@@ -5,14 +5,15 @@ using Hub.Infrastructure.MultiTenant.Interfaces;
 using Hub.Infrastructure.MultiTenant;
 using Hub.Infrastructure.Database.Interfaces;
 
-namespace Hub.Infrastructure.Autofac
+namespace Hub.Infrastructure.DependencyInjection
 {
     public class DependencyConfiguration : IDependencyConfiguration
     {
-        public void Register(ContainerBuilder builder) 
+        public void Register(ContainerBuilder builder)
         {
             builder.RegisterType<ConnectionStringBaseConfigurator>().AsSelf().SingleInstance();
             builder.RegisterType<TenantManager>().As<ITenantManager>().SingleInstance();
+            builder.RegisterType<MigrationManager>().As<IMigrationManager>().SingleInstance();
 
             builder.RegisterType<DefaultOrmConfiguration>().As<IOrmConfiguration>().SingleInstance();
             builder.RegisterType<DefaultOrmConfiguration>().AsSelf().SingleInstance();
