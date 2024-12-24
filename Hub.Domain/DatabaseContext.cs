@@ -1,11 +1,6 @@
-﻿using Hub.Infrastructure.MultiTenant.Teste;
+﻿using Hub.Infrastructure.MultiTenant.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Hub.Domain
 {

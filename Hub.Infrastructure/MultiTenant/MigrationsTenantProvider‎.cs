@@ -1,4 +1,6 @@
-﻿namespace Hub.Infrastructure.MultiTenant.Teste
+﻿using Hub.Infrastructure.MultiTenant.Interfaces;
+
+namespace Hub.Infrastructure.MultiTenant
 {
     public class MigrationsTenantProvider : ITenantProvider
     {
@@ -6,7 +8,7 @@
 
         public string DbSchemaName => "adm";
 
-        public string ConnectionString => "Persist Security Info=True;Integrated Security=true;Server=.;Database=MultiTenantSample;";
+        public string ConnectionString => Engine.ConnectionString("default");
 
         public IDisposable BeginScope(string tenant)
         {

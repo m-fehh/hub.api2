@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.MultiTenant.Teste;
+﻿using Hub.Infrastructure.MultiTenant.Interfaces;
 
 namespace Hub.API.Middlewares
 {

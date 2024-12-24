@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Hub.Infrastructure.MultiTenant.Interfaces;
+using Microsoft.Extensions.Options;
 
-namespace Hub.Infrastructure.MultiTenant.Teste
+namespace Hub.Infrastructure.MultiTenant
 {
     public class TenantProvider : ITenantProvider
     {

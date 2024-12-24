@@ -1,4 +1,4 @@
-﻿namespace Hub.Infrastructure.MultiTenant.Teste
+﻿namespace Hub.Infrastructure.MultiTenant.Interfaces
 {
     public interface ITenantProvider
     {

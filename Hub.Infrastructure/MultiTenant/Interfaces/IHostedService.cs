@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hub.Infrastructure.MultiTenant.Teste
+namespace Hub.Infrastructure.MultiTenant.Interfaces
 {
     internal class DbSchemaAwareModelCacheKeyFactory : IModelCacheKeyFactory
     {

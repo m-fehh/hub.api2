@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hub.Domain", "Hub.Domain\Hu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hub.Infrastructure", "Hub.Infrastructure\Hub.Infrastructure.csproj", "{98A4ED6E-771E-4AC4-B44F-9E6D9284FF22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hub.DbMigrator", "Hub.DbMigrator\Hub.DbMigrator.csproj", "{F6C24C93-DC0E-4717-AF54-2FCDF15FD4FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hub.DbMigration", "Hub.DbMigration\Hub.DbMigration.csproj", "{2740E0E3-056A-40A1-BD85-B79BB92A8BC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{98A4ED6E-771E-4AC4-B44F-9E6D9284FF22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98A4ED6E-771E-4AC4-B44F-9E6D9284FF22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98A4ED6E-771E-4AC4-B44F-9E6D9284FF22}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6C24C93-DC0E-4717-AF54-2FCDF15FD4FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6C24C93-DC0E-4717-AF54-2FCDF15FD4FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6C24C93-DC0E-4717-AF54-2FCDF15FD4FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6C24C93-DC0E-4717-AF54-2FCDF15FD4FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2740E0E3-056A-40A1-BD85-B79BB92A8BC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2740E0E3-056A-40A1-BD85-B79BB92A8BC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2740E0E3-056A-40A1-BD85-B79BB92A8BC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2740E0E3-056A-40A1-BD85-B79BB92A8BC6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

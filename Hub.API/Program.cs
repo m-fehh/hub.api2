@@ -24,21 +24,14 @@ var configuration = builder.Configuration;
 
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
-    var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-    // Inicializa o Engine com a configuração do HubProvider e outros parâmetros
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
         dependencyRegistrars: new List<IDependencyConfiguration>
         {
             new DependencyRegistration()
         },
-        containerBuilder: containerBuilder,
-        csb: new ConnectionStringBaseVM()
-        {
-            ConnectionStringBaseSchema = "sch",
-            ConnectionString = connectionString
-        });
+        containerBuilder: containerBuilder
+    );
 });
 
 
