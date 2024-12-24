@@ -1,149 +1,31 @@
 ﻿using Autofac;
-using Autofac.Core;
-using AutoMapper;
-using Hub.Infrastructure.Autofac;
-using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.DependencyInjection;
-using Hub.Infrastructure.DependencyInjection.Interfaces;
-using Hub.Infrastructure.Localization.Interfaces;
-using Hub.Infrastructure.Mapper;
-using Newtonsoft.Json;
-using System.Globalization;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Configuration;
 using System.Collections.Specialized;
 using Hub.Infrastructure.Extensions;
+using System.Runtime.CompilerServices;
+using System.Reflection;
+using Hub.Infrastructure.DependencyInjection.Interfaces;
+using Newtonsoft.Json;
+using Hub.Infrastructure.DependencyInjection;
+using Hub.Infrastructure.Autofac;
+using AutoMapper;
+using Hub.Infrastructure.Mapper;
+using Hub.Infrastructure.MultiTenant;
+using Autofac.Core;
+using Hub.Infrastructure.Localization.Interfaces;
+using System.Globalization;
 
 namespace Hub.Infrastructure
 {
     public static class Engine
     {
-        public static IContainer Container { get; set; }
-        public static Assembly ExecutingAssembly { get; private set; }
-        public static AsyncLocal<ILifetimeScope> CurrentScope = new AsyncLocal<ILifetimeScope>();
-        //private static AsyncLocal<LifetimeScopeDispose> currentScopeDisposer = new AsyncLocal<LifetimeScopeDispose>();
-        public static AsyncLocal<bool> IgnoreTenantConfigsScope = new AsyncLocal<bool>();
-        private static ContainerManager _containerManager;
-        private static ILocalizationProvider _localizationProvider;
-        private static List<IAutoMapperStartup> _autoMapperStartups;
+        #region APP SETTINGS 
+
         private static object appSettingsLock = new object();
-
-        //private static object appSettingsLock = new object();
-        private static Action initializeAction = null;
-
-        class LifetimeScopeDispose : IDisposable
-        {
-            public ILifetimeScope Scope { get; set; }
-
-            public bool IsDisposed { get; set; }
-
-            public LifetimeScopeDispose(ILifetimeScope scope)
-            {
-                Scope = scope;
-                IsDisposed = false;
-            }
-
-            public void Dispose()
-            {
-                if (CurrentScope.Value == Scope)
-                {
-                    CurrentScope.Value.Dispose();
-                    CurrentScope.Value = null;
-                }
-
-                IsDisposed = true;
-            }
-        }
-
-        public static void SetContainer(IContainer container)
-        {
-            _containerManager.Container = container;
-            initializeAction();
-        }
-
-        public static void RunAutoMapperStartups(IMapperConfigurationExpression cfg)
-        {
-            if (_autoMapperStartups == null) return;
-
-            foreach (var item in _autoMapperStartups)
-            {
-                item.RegisterMaps(cfg);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
-        {
-            ExecutingAssembly = executingAssembly;
-
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-            {
-                TypeNameHandling = TypeNameHandling.Auto
-            };
-
-            if (dependencyRegistrars == null)
-            {
-                dependencyRegistrars = new List<IDependencyConfiguration>();
-            }
-
-            dependencyRegistrars.Add(new DependencyConfiguration());
-
-            _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
-
-            initializeAction = new Action(() =>
-            {
-                if (_autoMapperStartups?.Count > 0)
-                {
-                    var config = new MapperConfiguration(cfg =>
-                    {
-                        RunAutoMapperStartups(cfg);
-                    });
-
-                    Singleton<IMapper>.Instance = config.CreateMapper();
-                }
-
-                TryResolve(out _localizationProvider);
-
-
-                IOrmConfiguration ormConfiguration = null;
-
-                if (TryResolve(out ormConfiguration))
-                {
-                    ormConfiguration.Configure();
-                }
-            });
-
-            if (_containerManager.Container != null)
-            {
-                initializeAction();
-            }
-        }
-
-        public static string ConnectionString(string settingName)
-        {
-            var connectionString = ConfigurationManager.ConnectionStrings[settingName];
-
-            if (connectionString != null)
-                return connectionString.ConnectionString;
-            else
-            {
-                var key = AppSettings[$"ConnectionString-{settingName}"];
-
-                if (key != null)
-                {
-                    return key;
-                }
-
-                return Environment.GetEnvironmentVariable($"ConnectionString-{settingName}");
-            }
-        }
-
         static NameValueCollection ConfigCollection = null;
-
         static Dictionary<string, NameValueCollection> TenantConfigCollection = new Dictionary<string, NameValueCollection>();
-
         static AsyncLocal<NameValueCollection> AsyncLocalConfigCollection = new AsyncLocal<NameValueCollection>();
+
 
         public static NameValueCollection AppSettings
         {
@@ -187,95 +69,158 @@ namespace Hub.Infrastructure
                     }
                 }
 
-                string tenantName = "";
-
-                //if (ContainerManager?.Container != null && IgnoreTenantConfigsScope.Value == false)
-                //{
-                //    tenantName = Singleton<ISchemaNameProvider>.Instance.TenantName();
-
-                //    if (tenantName.Equals("system", StringComparison.OrdinalIgnoreCase))
-                //    {
-                //        tenantName = "";
-                //    }
-                //}
-
-                if (!string.IsNullOrEmpty(tenantName))
-                {
-                    if (!TenantConfigCollection.ContainsKey(tenantName))
-                    {
-                        lock (appSettingsLock)
-                        {
-                            if (!TenantConfigCollection.ContainsKey(tenantName))
-                            {
-                                // Carregar configurações específicas do tenant a partir do appsettings
-                                var tenantPrefix = $"{tenantName}:";
-                                var tenantSettings = ConfigurationManager.AppSettings
-                                    .AllKeys
-                                    .Where(k => k.StartsWith(tenantPrefix, StringComparison.OrdinalIgnoreCase))
-                                    .ToDictionary(
-                                        k => k.Substring(tenantPrefix.Length),
-                                        k => ConfigurationManager.AppSettings[k]
-                                    );
-
-                                var all = new NameValueCollection(ConfigCollection);
-
-                                foreach (var kvp in tenantSettings)
-                                {
-                                    all[kvp.Key] = kvp.Value;
-                                }
-
-                                // Aplicar chaves de debug para o tenant
-                                foreach (var debugKey in all.AllKeys.Where(a => a.StartsWith("Debug:")))
-                                {
-                                    var originalKey = debugKey.Replace("Debug:", "");
-
-                                    if (all.AllKeys.Contains(originalKey))
-                                    {
-                                        all[originalKey] = all[debugKey];
-                                    }
-                                    else
-                                    {
-                                        all.Add(originalKey, all[debugKey]);
-                                    }
-                                }
-
-                                TenantConfigCollection.Add(tenantName, all);
-                            }
-                        }
-                    }
-
-                    if (AsyncLocalConfigCollection.Value != null)
-                    {
-                        var all = new NameValueCollection(TenantConfigCollection[tenantName]);
-
-                        foreach (string key in AsyncLocalConfigCollection.Value)
-                        {
-                            all[key] = AsyncLocalConfigCollection.Value[key];
-                        }
-
-                        return all;
-                    }
-
-                    return TenantConfigCollection[tenantName];
-                }
-
-                if (AsyncLocalConfigCollection.Value != null)
-                {
-                    var all = new NameValueCollection(ConfigCollection);
-
-                    foreach (string key in AsyncLocalConfigCollection.Value)
-                    {
-                        all[key] = AsyncLocalConfigCollection.Value[key];
-                    }
-
-                    return all;
-                }
 
                 return ConfigCollection;
             }
         }
 
-        #region RESOLVE 
+        #endregion
+
+        #region CONNECTION STRINGS 
+
+        public static string ConnectionString(string settingName)
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings[settingName];
+
+            if (connectionString != null)
+                return connectionString.ConnectionString;
+            else
+            {
+                var key = AppSettings[$"ConnectionString-{settingName}"];
+
+                if (key != null)
+                {
+                    return key;
+                }
+
+                return Environment.GetEnvironmentVariable($"ConnectionString-{settingName}");
+            }
+        }
+
+        #endregion
+
+        #region MAPPER 
+
+        private static List<IAutoMapperStartup> _autoMapperStartups;
+
+        public static void RunAutoMapperStartups(IMapperConfigurationExpression cfg)
+        {
+            if (_autoMapperStartups == null) return;
+
+            foreach (var item in _autoMapperStartups)
+            {
+                item.RegisterMaps(cfg);
+            }
+        }
+
+        #endregion
+
+        private static readonly AsyncLocal<ILifetimeScope> CurrentScope = new AsyncLocal<ILifetimeScope>();
+        private static IContainer _container;
+        private static Action _initializeAction;
+        private static ContainerManager _containerManager;
+        private static ILocalizationProvider _localizationProvider;
+
+        public static Assembly ExecutingAssembly { get; private set; }
+
+        public static IContainer Container
+        {
+            get => _container;
+            private set
+            {
+                _container = value;
+                _initializeAction?.Invoke();
+            }
+        }
+
+        public static ContainerManager ContainerManager
+        {
+            get { return _containerManager; }
+        }
+
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
+        {
+            ExecutingAssembly = executingAssembly;
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            };
+
+            dependencyRegistrars ??= new List<IDependencyConfiguration>();
+            dependencyRegistrars.Add(new DependencyConfiguration());
+
+            _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
+
+            if (_autoMapperStartups?.Count > 0)
+            {
+                var config = new MapperConfiguration(cfg =>
+                {
+                    Engine.RunAutoMapperStartups(cfg);
+                });
+
+                Singleton<IMapper>.Instance = config.CreateMapper();
+            }
+
+            if (_containerManager.Container != null)
+            {
+                _containerManager.Container.Resolve<IMapper>();
+            }
+        }
+
+        // Iniciar o escopo para o tenant
+        public static IDisposable BeginTenantScope(string tenant)
+        {
+            // Inicia o escopo do tenant e configura o contexto
+            TenantContext.BeginScope(tenant);
+            var lifetimeScope = _container.BeginLifetimeScope(builder =>
+            {
+                // Registra a dependência de tenant específico no escopo
+                builder.RegisterInstance(tenant).As<string>().SingleInstance();
+            });
+
+            // Define o escopo atual
+            CurrentScope.Value = lifetimeScope;
+
+            return new TenantScopeDisposable(lifetimeScope);
+        }
+
+        // Finaliza o escopo do tenant
+        public static void EndTenantScope()
+        {
+            TenantContext.EndScope();
+
+            if (CurrentScope.Value != null)
+            {
+                CurrentScope.Value.Dispose();
+                CurrentScope.Value = null;
+            }
+        }
+
+        // Classe responsável por descartar o escopo do tenant
+        private class TenantScopeDisposable : IDisposable
+        {
+            private readonly ILifetimeScope _lifetimeScope;
+            private bool _disposed;
+
+            public TenantScopeDisposable(ILifetimeScope lifetimeScope)
+            {
+                _lifetimeScope = lifetimeScope;
+            }
+
+            public void Dispose()
+            {
+                if (!_disposed)
+                {
+                    _lifetimeScope.Dispose();
+                    _disposed = true;
+                }
+            }
+        }
+
+        #region RESOLVES 
 
         public static T Resolve<T>()
         {
@@ -373,11 +318,6 @@ namespace Hub.Infrastructure
             if (_localizationProvider == null) return key;
 
             return string.Format(_localizationProvider.Get(key, culture), args);
-        }
-
-        public static ContainerManager ContainerManager
-        {
-            get { return _containerManager; }
         }
 
         #endregion

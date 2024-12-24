@@ -1,7 +1,4 @@
-﻿using Dapper;
-using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.MultiTenant.Teste;
-using Microsoft.Data.SqlClient;
+﻿using Hub.Infrastructure.Database.Interfaces;
 
 namespace Hub.Infrastructure.Database
 {

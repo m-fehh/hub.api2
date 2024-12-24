@@ -42,7 +42,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-Engine.SetContainer((IContainer)app.Services.GetAutofacRoot());
+//Engine.SetContainer((IContainer)app.Services.GetAutofacRoot());
 
 
 // Configure the HTTP request pipeline.

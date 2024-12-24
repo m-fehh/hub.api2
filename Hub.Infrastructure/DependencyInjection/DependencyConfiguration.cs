@@ -4,6 +4,9 @@ using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.MultiTenant;
 using Hub.Infrastructure.MultiTenant.Interfaces;
+using Autofac.Core;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -15,6 +18,10 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<DefaultOrmConfiguration>().AsSelf().SingleInstance();
 
             builder.RegisterType<TenantProvider>().As<ITenantProvider>().SingleInstance();
+
+            builder.RegisterType<DbSchemaAwareModelCacheKeyFactory>().As<IModelCacheKeyFactory>().SingleInstance();
+            builder.RegisterType<DbSchemaAwareSqlServerMigrationsSqlGenerator>().As<IMigrationsSqlGenerator>().SingleInstance();
+
         }
 
         public int Order
