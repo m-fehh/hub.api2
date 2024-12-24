@@ -6,6 +6,7 @@ using System.Reflection;
 using Hub.Application.Configurations;
 using Hub.Infrastructure.Database;
 using Microsoft.Extensions.Configuration;
+using Hub.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseTenantScopeMiddleware();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
