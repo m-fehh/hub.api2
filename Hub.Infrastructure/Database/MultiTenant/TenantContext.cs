@@ -1,6 +1,6 @@
-﻿namespace Hub.Infrastructure.MultiTenant
+﻿namespace Hub.Infrastructure.Database.MultiTenant
 {
-    internal static class TenantContext
+    public static class TenantContext
     {
         private sealed class ContextDisposable : IDisposable
         {
@@ -47,4 +47,5 @@
             public string? Tenant { get; set; }
         }
     }
+
 }

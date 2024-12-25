@@ -41,19 +41,19 @@ namespace Hub.Infrastructure.Localization
             return displayName;
         }
 
-        public static string DefaultRequiredMessage<TSource, TProperty>(this TSource source, Expression<Func<TSource, TProperty>> propertyLambda)
-        {
-            var displayName = GetDisplayName(source, propertyLambda);
+        //public static string DefaultRequiredMessage<TSource, TProperty>(this TSource source, Expression<Func<TSource, TProperty>> propertyLambda)
+        //{
+        //    var displayName = GetDisplayName(source, propertyLambda);
 
-            return string.Format(Engine.Get("DefaultRequiredMessage"), Engine.Get(displayName));
-        }
+        //    return string.Format(Engine.Get("DefaultRequiredMessage"), Engine.Get(displayName));
+        //}
 
-        public static string DefaultAlreadyRegisteredMessage<TSource, TProperty>(this TSource source, Expression<Func<TSource, TProperty>> propertyLambda)
-        {
-            var displayName = GetDisplayName(source, propertyLambda);
+        //public static string DefaultAlreadyRegisteredMessage<TSource, TProperty>(this TSource source, Expression<Func<TSource, TProperty>> propertyLambda)
+        //{
+        //    var displayName = GetDisplayName(source, propertyLambda);
 
-            return string.Format(Engine.Get("DefaultAlreadyRegistered"), Engine.Get(displayName));
-        }
+        //    return string.Format(Engine.Get("DefaultAlreadyRegistered"), Engine.Get(displayName));
+        //}
 
         public static string DisplayName<TSource, TProperty>(this TSource source, Expression<Func<TSource, TProperty>> propertyLambda)
         {

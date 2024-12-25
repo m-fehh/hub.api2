@@ -1,11 +1,16 @@
-﻿using Hub.Infrastructure.MultiTenant.Interfaces;
+﻿using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Hub.Infrastructure.MultiTenant
+namespace Hub.Infrastructure.Database.MultiTenant
 {
     public class TenantProvider : ITenantProvider
     {
-        public const string DefaultSchemaName = "adm";
+        public const string DefaultSchemaName = "dbo";
         private readonly string _defaultConnectionString;
         private readonly Dictionary<string, string> _connectionStringPerTenant;
 

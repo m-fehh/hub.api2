@@ -2,21 +2,20 @@
 using System.Configuration;
 using System.Collections.Specialized;
 using Hub.Infrastructure.Extensions;
-using System.Runtime.CompilerServices;
-using System.Reflection;
+using AutoMapper;
+using Hub.Infrastructure.Mapper;
+using Microsoft.EntityFrameworkCore;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Hub.Infrastructure.DependencyInjection;
 using Hub.Infrastructure.Autofac;
-using AutoMapper;
-using Hub.Infrastructure.Mapper;
-using Hub.Infrastructure.MultiTenant;
-using Autofac.Core;
-using Hub.Infrastructure.Localization.Interfaces;
-using System.Globalization;
 using Hub.Infrastructure.Database.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Hub.Infrastructure.Localization.Interfaces;
+using System.Threading.Tasks;
+using System.Globalization;
+using Autofac.Core;
 
 namespace Hub.Infrastructure
 {
@@ -118,68 +117,20 @@ namespace Hub.Infrastructure
 
         #endregion
 
-        private static readonly AsyncLocal<ILifetimeScope> CurrentScope = new AsyncLocal<ILifetimeScope>();
-        private static IContainer _container;
-        private static Action _initializeAction;
-        private static ContainerManager _containerManager;
-        private static ILocalizationProvider _localizationProvider;
-
         public static Assembly ExecutingAssembly { get; private set; }
+        private static ContainerManager _containerManager;
+        private static Action initializeAction = null;
+        private static ILocalizationProvider _localizationProvider;
+        public static AsyncLocal<ILifetimeScope> CurrentScope = new AsyncLocal<ILifetimeScope>();
 
-        public static IContainer Container
+        public static void SetContainer(IContainer container)
         {
-            get => _container;
-            private set
-            {
-                _container = value;
-                _initializeAction?.Invoke();
-            }
+            _containerManager.Container = container;
+            initializeAction();
         }
-
-        public static ContainerManager ContainerManager
-        {
-            get { return _containerManager; }
-        }
-
-
-        //[MethodImpl(MethodImplOptions.Synchronized)]
-        //public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
-        //{
-        //    ExecutingAssembly = executingAssembly;
-
-        //    JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        //    {
-        //        TypeNameHandling = TypeNameHandling.Auto
-        //    };
-
-        //    dependencyRegistrars ??= new List<IDependencyConfiguration>();
-        //    dependencyRegistrars.Add(new DependencyConfiguration());
-
-        //    _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
-
-        //    if (_autoMapperStartups?.Count > 0)
-        //    {
-        //        var config = new MapperConfiguration(cfg =>
-        //        {
-        //            Engine.RunAutoMapperStartups(cfg);
-        //        });
-
-        //        Singleton<IMapper>.Instance = config.CreateMapper();
-        //    }
-
-        //    if (_containerManager.Container != null)
-        //    {
-        //        _containerManager.Container.Resolve<IMapper>();
-        //    }
-        //}
-
-        // ISchemaNameProvider nameProvider = null, 
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Initialize(
-            Assembly executingAssembly,
-            IList<IDependencyConfiguration> dependencyRegistrars = null,
-            ContainerBuilder containerBuilder = null)
+        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
         {
             ExecutingAssembly = executingAssembly;
 
@@ -197,115 +148,37 @@ namespace Hub.Infrastructure
 
             _containerManager = new ContainerManager(dependencyRegistrars, containerBuilder);
 
-            _initializeAction = new Action(() =>
+            initializeAction = new Action(() =>
             {
+                if (_autoMapperStartups?.Count > 0)
+                {
+                    var config = new MapperConfiguration(cfg =>
+                    {
+                        RunAutoMapperStartups(cfg);
+                    });
+
+                    Singleton<IMapper>.Instance = config.CreateMapper();
+                }
+
                 TryResolve(out _localizationProvider);
 
-                // Registrar suporte a múltiplos tenants
-                var services = new ServiceCollection();
-                services.AddTenantSupport();
 
+                IOrmConfiguration ormConfiguration = null;
 
-                // Montar o provedor de serviços
-                var serviceProvider = services.BuildServiceProvider();
-
-                // Obter os tenants ativos
-                var tenantOptions = serviceProvider.GetRequiredService<TenantConfigurationOptions>();
-
-                // Exemplo de uso dos tenants
-                foreach (var tenant in tenantOptions.Tenants)
+                if (TryResolve(out ormConfiguration))
                 {
-                    Console.WriteLine($"Tenant ativo: {tenant.Name} - {tenant.ConnectionString}");
+                    ormConfiguration.Configure();
                 }
             });
 
             if (_containerManager.Container != null)
             {
-                _initializeAction();
+                initializeAction();
             }
         }
 
 
-        public static IDisposable BeginIgnoreTenantConfigs(bool ignoreTenantConfigs = true)
-        {
-            return new IgnoreTenantConfigScopeDisposable(ignoreTenantConfigs);
-        }
-
-        public static AsyncLocal<bool> IgnoreTenantConfigsScope = new AsyncLocal<bool>();
-
-        class IgnoreTenantConfigScopeDisposable : IDisposable
-        {
-            private bool originalValue;
-
-            public IgnoreTenantConfigScopeDisposable()
-            {
-                originalValue = IgnoreTenantConfigsScope.Value;
-                IgnoreTenantConfigsScope.Value = true;
-            }
-
-            public IgnoreTenantConfigScopeDisposable(bool ignoreValue)
-            {
-                originalValue = IgnoreTenantConfigsScope.Value;
-                IgnoreTenantConfigsScope.Value = ignoreValue;
-            }
-
-            public void Dispose()
-            {
-                IgnoreTenantConfigsScope.Value = originalValue;
-            }
-        }
-
-        // Iniciar o escopo para o tenant
-        public static IDisposable BeginLifetimeScope(string tenant)
-        {
-            // Inicia o escopo do tenant e configura o contexto
-            TenantContext.BeginScope(tenant);
-            var lifetimeScope = _container.BeginLifetimeScope(builder =>
-            {
-                // Registra a dependência de tenant específico no escopo
-                builder.RegisterInstance(tenant).As<string>().SingleInstance();
-            });
-
-            // Define o escopo atual
-            CurrentScope.Value = lifetimeScope;
-
-            return new TenantScopeDisposable(lifetimeScope);
-        }
-
-        // Finaliza o escopo do tenant
-        public static void EndTenantScope()
-        {
-            TenantContext.EndScope();
-
-            if (CurrentScope.Value != null)
-            {
-                CurrentScope.Value.Dispose();
-                CurrentScope.Value = null;
-            }
-        }
-
-        // Classe responsável por descartar o escopo do tenant
-        private class TenantScopeDisposable : IDisposable
-        {
-            private readonly ILifetimeScope _lifetimeScope;
-            private bool _disposed;
-
-            public TenantScopeDisposable(ILifetimeScope lifetimeScope)
-            {
-                _lifetimeScope = lifetimeScope;
-            }
-
-            public void Dispose()
-            {
-                if (!_disposed)
-                {
-                    _lifetimeScope.Dispose();
-                    _disposed = true;
-                }
-            }
-        }
-
-        #region RESOLVES 
+        #region RESOLVE 
 
         public static T Resolve<T>()
         {
@@ -404,6 +277,12 @@ namespace Hub.Infrastructure
 
             return string.Format(_localizationProvider.Get(key, culture), args);
         }
+
+        public static ContainerManager ContainerManager
+        {
+            get { return _containerManager; }
+        }
+
 
         #endregion
     }

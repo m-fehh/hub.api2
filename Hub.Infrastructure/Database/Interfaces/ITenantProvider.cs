@@ -1,4 +1,4 @@
-﻿namespace Hub.Infrastructure.MultiTenant.Interfaces
+﻿namespace Hub.Infrastructure.Database.Interfaces
 {
     public interface ITenantProvider
     {

@@ -4,7 +4,7 @@ using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Infrastructure;
 using System.Reflection;
 using Hub.Application.Configurations;
-using Hub.API.Middlewares;
+//using Hub.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +40,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-//Engine.SetContainer((IContainer)app.Services.GetAutofacRoot());
+Engine.SetContainer((IContainer)app.Services.GetAutofacRoot());
 
 
 // Configure the HTTP request pipeline.
@@ -50,7 +50,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseTenantScopeMiddleware();
+//app.UseTenantScopeMiddleware();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

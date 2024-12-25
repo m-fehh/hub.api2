@@ -1,12 +1,13 @@
-﻿using Hub.Infrastructure.MultiTenant.Interfaces;
+﻿using Hub.Infrastructure;
+using Hub.Infrastructure.Database.Interfaces;
 
-namespace Hub.Infrastructure.MultiTenant
+namespace Hub.Domain.Persistence
 {
     public class MigrationsTenantProvider : ITenantProvider
     {
         public string? CurrentTenant => null;
 
-        public string DbSchemaName => "adm";
+        public string DbSchemaName => "dbo";
 
         public string ConnectionString => Engine.ConnectionString("default");
 

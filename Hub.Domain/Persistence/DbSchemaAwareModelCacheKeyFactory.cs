@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Hub.Infrastructure.Database.Interfaces;
 
-namespace Hub.Infrastructure.MultiTenant.Interfaces
+namespace Hub.Domain.Persistence
 {
     internal class DbSchemaAwareModelCacheKeyFactory : IModelCacheKeyFactory
     {
@@ -17,4 +18,5 @@ namespace Hub.Infrastructure.MultiTenant.Interfaces
             return Tuple.Create(context.GetType(), _tenantProvider.DbSchemaName, designTime);
         }
     }
+
 }

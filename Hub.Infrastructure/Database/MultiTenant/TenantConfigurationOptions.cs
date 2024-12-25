@@ -1,18 +1,13 @@
-﻿namespace Hub.Infrastructure.MultiTenant
+﻿namespace Hub.Infrastructure.Database.MultiTenant
 {
     public class TenantConfigurationOptions
     {
+        public const string ConfigKey = "TenantConfiguration";
         public class Tenant
         {
-            public long Id { get; set; }
-
             public string Name { get; set; } = null!;
 
             public string? ConnectionString { get; set; }
-
-            public bool IsActive { get; set; }
-
-            public string DefaultCulture { get; set; }
         }
 
         public string ConnectionString { get; set; } = null!;

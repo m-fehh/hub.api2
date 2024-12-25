@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Hub.Infrastructure\Hub.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
