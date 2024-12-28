@@ -13,7 +13,6 @@ using Hub.Infrastructure.DependencyInjection;
 using Hub.Infrastructure.Autofac;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Localization.Interfaces;
-using System.Threading.Tasks;
 using System.Globalization;
 using Autofac.Core;
 
@@ -23,11 +22,73 @@ namespace Hub.Infrastructure
     {
         #region APP SETTINGS 
 
-        private static object appSettingsLock = new object();
+        /// <summary>
+        /// Permite substituir/criar uma configuração para o escopo atual
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public static void SetThreadSetting(string key, string value)
+        {
+            if (AsyncLocalConfigCollection.Value == null)
+            {
+                AsyncLocalConfigCollection.Value = new NameValueCollection();
+            }
+
+            if (AsyncLocalConfigCollection.Value.AllKeys.Any(c => c == key))
+            {
+                AsyncLocalConfigCollection.Value[key] = value;
+            }
+            else
+            {
+                AsyncLocalConfigCollection.Value.Add(key, value);
+            }
+        }
+
+        public static void RemoveThreadSetting(string key)
+        {
+            if (AsyncLocalConfigCollection.Value == null)
+            {
+                return;
+            }
+
+            if (AsyncLocalConfigCollection.Value.AllKeys.Any(c => c == key))
+            {
+                AsyncLocalConfigCollection.Value.Remove(key);
+            }
+        }
+
+        public class ScopeAppSetting : IDisposable
+        {
+            private readonly string key;
+            private readonly string originalValue;
+
+            public ScopeAppSetting(string key, string originalValue)
+            {
+                this.key = key;
+                this.originalValue = originalValue;
+            }
+
+            public void Dispose()
+            {
+                Engine.SetThreadSetting(key, originalValue);
+            }
+        }
+        public static IDisposable SetScopedSetting(string key, string value)
+        {
+            var currentValue = Engine.AppSettings[key];
+
+            Engine.SetThreadSetting(key, value);
+
+            return new ScopeAppSetting(key, currentValue);
+        }
+
         static NameValueCollection ConfigCollection = null;
+
         static Dictionary<string, NameValueCollection> TenantConfigCollection = new Dictionary<string, NameValueCollection>();
+
         static AsyncLocal<NameValueCollection> AsyncLocalConfigCollection = new AsyncLocal<NameValueCollection>();
 
+        private static object appSettingsLock = new object();
 
         public static NameValueCollection AppSettings
         {
@@ -39,7 +100,7 @@ namespace Hub.Infrastructure
                     {
                         if (ConfigCollection == null)
                         {
-                            NameValueCollection all;
+                            NameValueCollection all = null;
 
                             if (ConfigurationManager.AppSettings.Keys.Count != 0)
                             {
@@ -50,8 +111,9 @@ namespace Hub.Infrastructure
                                 all = new NameValueCollection(Environment.GetEnvironmentVariables().ToNameValueCollection());
                             }
 
-                            // Aplicar chaves de debug (substituir qualquer chave quando em modo Debug)
-                            // Exemplo de chave no appsettings.json: "Debug:elos-api-endpoint"
+
+                            //chaves de debug (usadas para substituir qualquer chave quando em modo Debug)
+                            //exemplo de chave no local.settings.json: "Debug:elos-api-endpoint"
                             foreach (var debugKey in all.AllKeys.Where(a => a.StartsWith("Debug:")))
                             {
                                 var originalKey = debugKey.Replace("Debug:", "");
@@ -71,6 +133,17 @@ namespace Hub.Infrastructure
                     }
                 }
 
+                if (AsyncLocalConfigCollection.Value != null)
+                {
+                    var all = new NameValueCollection(ConfigCollection);
+
+                    foreach (string key in AsyncLocalConfigCollection.Value)
+                    {
+                        all[key] = AsyncLocalConfigCollection.Value[key];
+                    }
+
+                    return all;
+                }
 
                 return ConfigCollection;
             }
@@ -82,10 +155,10 @@ namespace Hub.Infrastructure
 
         public static string ConnectionString(string settingName)
         {
-            var connectionString = ConfigurationManager.ConnectionStrings[settingName];
+            var cs = ConfigurationManager.ConnectionStrings[settingName];
 
-            if (connectionString != null)
-                return connectionString.ConnectionString;
+            if (cs != null)
+                return cs.ConnectionString;
             else
             {
                 var key = AppSettings[$"ConnectionString-{settingName}"];
@@ -122,11 +195,42 @@ namespace Hub.Infrastructure
         private static Action initializeAction = null;
         private static ILocalizationProvider _localizationProvider;
         public static AsyncLocal<ILifetimeScope> CurrentScope = new AsyncLocal<ILifetimeScope>();
+        private static AsyncLocal<LifetimeScopeDispose> currentScopeDisposer = new AsyncLocal<LifetimeScopeDispose>();
+
+        class LifetimeScopeDispose : IDisposable
+        {
+            public ILifetimeScope Scope { get; set; }
+
+            public bool IsDisposed { get; set; }
+
+            public LifetimeScopeDispose(ILifetimeScope scope)
+            {
+                this.Scope = scope;
+                this.IsDisposed = false;
+            }
+
+            public void Dispose()
+            {
+                if (Engine.CurrentScope.Value == this.Scope)
+                {
+                    Engine.CurrentScope.Value.Dispose();
+                    Engine.CurrentScope.Value = null;
+                }
+
+                IsDisposed = true;
+            }
+        }
 
         public static void SetContainer(IContainer container)
         {
             _containerManager.Container = container;
             initializeAction();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static void Initialize(EngineInitializationParameters engineInitializationParameters)
+        {
+            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, containerBuilder: engineInitializationParameters.ContainerBuilder);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -177,6 +281,69 @@ namespace Hub.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Inicia um novo ciclo de vida do injetor de dependências
+        /// </summary>
+        /// <param name="tenantName">nome do tenant para o ciclo de vida que será criado</param>
+        /// <param name="forceTenantAndCulture"></param>
+        /// <returns></returns>
+        //public static IDisposable BeginLifetimeScope(string tenantName, bool forceTenantAndCulture = false)
+        //{
+        //    if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
+        //    {
+        //        CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
+
+        //        currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
+
+        //        var tenantLifeTimeScope = Resolve<TenantLifeTimeScope>();
+
+        //        tenantLifeTimeScope.Start(tenantName);
+
+
+        //        ////se não houver culture definida, define a padrão (situação ocorreu no jobs em ambientes linux/docker)
+        //        //if (string.IsNullOrEmpty(CultureInfo.CurrentCulture?.Name))
+        //        //{
+        //        //    CultureInfoHelper.SetDefaultCultureInfo();
+        //        //}
+
+        //        return currentScopeDisposer.Value;
+        //    }
+
+        //    return null;
+        //}
+
+        /// <summary>
+        /// inicia um escopo onde o sistema não irá buscar por configurações específicas do tenant, apenas do environment.
+        /// </summary>
+        /// <returns></returns>
+        public static IDisposable BeginIgnoreTenantConfigs(bool ignoreTenantConfigs = true)
+        {
+            return new IgnoreTenantConfigScopeDisposable(ignoreTenantConfigs);
+        }
+
+        public static AsyncLocal<bool> IgnoreTenantConfigsScope = new AsyncLocal<bool>();
+
+        class IgnoreTenantConfigScopeDisposable : IDisposable
+        {
+            private bool originalValue;
+
+            public IgnoreTenantConfigScopeDisposable()
+            {
+                originalValue = IgnoreTenantConfigsScope.Value;
+                IgnoreTenantConfigsScope.Value = true;
+            }
+
+            public IgnoreTenantConfigScopeDisposable(bool ignoreValue)
+            {
+                originalValue = IgnoreTenantConfigsScope.Value;
+                IgnoreTenantConfigsScope.Value = ignoreValue;
+            }
+
+            public void Dispose()
+            {
+                IgnoreTenantConfigsScope.Value = originalValue;
+            }
+        }
 
         #region RESOLVE 
 

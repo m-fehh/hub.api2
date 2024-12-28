@@ -27,14 +27,12 @@ namespace Hub.Infrastructure.Database.MultiTenant
                     return connectionString;
                 }
 
-                return _defaultConnectionString;
+                return Engine.ConnectionString("default");
             }
         }
 
         public TenantProvider(IOptions<TenantConfigurationOptions> tenantConfigurationOptions)
         {
-            _defaultConnectionString = tenantConfigurationOptions.Value.ConnectionString;
-
             _connectionStringPerTenant = tenantConfigurationOptions.Value.Tenants
                 .Where(t => !string.IsNullOrWhiteSpace(t.ConnectionString))
                 .ToDictionary(ks => ks.Name, vs => vs.ConnectionString!);
