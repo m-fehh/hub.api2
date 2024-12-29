@@ -19,10 +19,6 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<DefaultTenantManager>().As<ITenantManager>().SingleInstance();
         }
 
-        public int Order
-        {
-            get { return -1; }
-        }
-
+        public int Order => -1;
     }
 }

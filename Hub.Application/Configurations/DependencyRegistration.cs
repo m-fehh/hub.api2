@@ -10,9 +10,6 @@ namespace Hub.Application.Configurations
 
         }
 
-        public int Order
-        {
-            get { return 1; }
-        }
+        public int Order => 1;
     }
 }
