@@ -1,7 +1,7 @@
 ﻿using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.MultiTenant;
 
-namespace Hub.Migrator
+namespace Hub.Migrator.Services
 {
     public static class TenantServiceExtensions
     {

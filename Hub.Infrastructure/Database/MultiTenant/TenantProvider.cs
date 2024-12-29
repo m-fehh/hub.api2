@@ -1,70 +1,46 @@
-﻿using Dapper;
-using Hub.Infrastructure.Autofac;
+﻿using Hub.Infrastructure.Autofac;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.Models;
-using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Hub.Infrastructure.Database.MultiTenant
 {
     public class TenantProvider : ITenantProvider
     {
-        public const string DefaultSchemaName = "lala";
-        private readonly string _defaultConnectionString;
-        public readonly Dictionary<string, AdmClient> _tenantConfigurations;
+        private readonly Dictionary<string, AdmClient> _tenantConfigurations;
 
         public string? CurrentTenant => TenantLifeTimeScope.CurrentTenant;
 
-        public string DbSchemaName => (CurrentTenant != null) ? (_tenantConfigurations.TryGetValue(CurrentTenant, out var config) ? $"sch{config.Id}" : DefaultSchemaName) : DefaultSchemaName;
-
-        public string ConnectionString
+        public TenantProvider()
         {
-            get
-            {
-                if (CurrentTenant != null && _tenantConfigurations.TryGetValue(CurrentTenant, out var config))
-                {
-                    return config.ConnectionString ?? _defaultConnectionString;
-                }
+            var tenants = Singleton<ConfigurationTenant>.Instance.Mapeamentos[0].ConfigurationTenants;
 
-                return _defaultConnectionString;
-            }
+            _tenantConfigurations = tenants.ToDictionary(tenant => tenant.Subdomain, tenant => new AdmClient
+            {
+                Id = tenant.TenantId,
+                Name = tenant.TenantName,
+                Subdomain = tenant.Subdomain,
+                ConnectionString = tenant.ConnectionString ?? Engine.ConnectionString("default"),
+                DefaultCulture = tenant.Culture,
+                Schema = tenant.SchemaDefault
+            });
         }
+
+        public string? DbSchemaName => GetTenantConfiguration()?.Schema ?? null;
+
+        public string? ConnectionString => GetTenantConfiguration()?.ConnectionString ?? null;
 
         public List<AdmClient> Tenants => _tenantConfigurations.Values.ToList();
 
-        public TenantProvider()
+        private AdmClient? GetTenantConfiguration()
         {
-            _defaultConnectionString = Engine.ConnectionString("default");
-
-            // Aqui fazemos a consulta aos tenants via Dapper
-            using (var connection = new SqlConnection(Engine.ConnectionString("adm")))
+            if (CurrentTenant != null && _tenantConfigurations.TryGetValue(CurrentTenant, out var config))
             {
-                connection.Open();
-
-                // Consultando os tenants e suas configurações (ajuste a consulta conforme necessário)
-                var query = @"
-                        SELECT 
-                            Id, 
-                            Name,
-                            Subdomain,
-                            ConnectionString, 
-                            IsActive, 
-                            DefaultCulture
-                        FROM 
-                            Tenants
-                        WHERE 
-                            IsActive = 1";
-
-                var tenants = connection.Query<AdmClient>(query).ToList();
-
-                // Convertendo os dados para o formato de dicionário
-                _tenantConfigurations = tenants.ToDictionary(tenant => tenant.Subdomain, tenant => tenant);
+                return config;
             }
 
-            if (_tenantConfigurations == null || !_tenantConfigurations.Any())
-            {
-                throw new InvalidOperationException("Nenhum tenant encontrado no banco de dados.");
-            }
+            return null; 
         }
     }
 }
-

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hub.Domain
+namespace Hub.Domain.Persistence
 {
     public class MigrationsDbContextFactory : IDesignTimeDbContextFactory<EntityDbContext>
     {

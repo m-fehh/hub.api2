@@ -164,10 +164,24 @@ namespace Hub.Infrastructure.Database
     public class ConfigurationData : ConfigurationElement, ICloneable
     {
         [ConfigurationProperty("TenantId", IsRequired = true)]
-        public string TenantId
+        public long TenantId
         {
-            get { return this["TenantId"] as string; }
+            get { return (long)this["TenantId"]; }  // Conversão explícita
             set { this["TenantId"] = value; }
+        }
+
+        [ConfigurationProperty("TenantName", IsRequired = true)]
+        public string TenantName
+        {
+            get { return this["TenantName"] as string; }
+            set { this["TenantName"] = value; }
+        }
+
+        [ConfigurationProperty("Subdomain", IsRequired = true)]
+        public string Subdomain
+        {
+            get { return this["Subdomain"] as string; }
+            set { this["Subdomain"] = value; }
         }
 
         [ConfigurationProperty("ConnectionString", IsRequired = true)]

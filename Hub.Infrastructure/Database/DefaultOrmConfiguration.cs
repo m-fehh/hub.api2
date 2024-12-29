@@ -15,10 +15,10 @@ namespace Hub.Infrastructure.Database
                 Mapeamentos = new ConfigurationMapeamentoCollection()
             };
 
-            var admCS = Engine.ConnectionString("adm") ?? "Server=localhost\\SQLEXPRESS;Database=MultiTenantSampleADM;Trusted_Connection=True;TrustServerCertificate=True;";
-            var csb = Engine.Resolve<ConnectionStringBaseConfigurator>().Get();
+            var connectionStringAdmin = Engine.ConnectionString("adm");
+            var baseConfigurator = Engine.Resolve<ConnectionStringBaseConfigurator>().Get();
 
-            if (!string.IsNullOrEmpty(admCS))
+            if (!string.IsNullOrEmpty(connectionStringAdmin))
             {
                 var map = new ConfigurationMapeamento
                 {
@@ -26,7 +26,7 @@ namespace Hub.Infrastructure.Database
                     ConfigurationTenants = new ConfigurationDataCollection()
                 };
 
-                using (var connection = new SqlConnection(admCS))
+                using (var connection = new SqlConnection(connectionStringAdmin))
                 {
                     const string query = @"
                         SELECT 
@@ -51,9 +51,11 @@ namespace Hub.Infrastructure.Database
                             {
                                 map.ConfigurationTenants.Add(new ConfigurationData
                                 {
-                                    TenantId = client.Subdomain,
+                                    TenantId = client.Id,
+                                    TenantName = client.Name,
+                                    Subdomain = client.Subdomain,
                                     ConnectionString = client.ConnectionString ?? Engine.ConnectionString("default"),
-                                    SchemaDefault = $"{csb.ConnectionStringBaseSchema ?? "sch"}{client.Id}",
+                                    SchemaDefault = $"{baseConfigurator.ConnectionStringBaseSchema}{client.Id}",
                                     Culture = client.DefaultCulture
                                 });
                             }
