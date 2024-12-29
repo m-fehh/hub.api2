@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Design;
+﻿using Hub.Domain.Migrations;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hub.Domain.Persistence
+namespace Hub.Domain
 {
     public class MigrationsDbContextFactory : IDesignTimeDbContextFactory<EntityDbContext>
     {
@@ -12,5 +13,4 @@ namespace Hub.Domain.Persistence
             return new EntityDbContext(builder.Options, new MigrationsTenantProvider());
         }
     }
-
 }

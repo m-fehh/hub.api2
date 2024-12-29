@@ -1,11 +1,11 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Hub.Domain.Persistence;
-using Hub.Domain;
 using Hub.Infrastructure;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
-using Hub.Migrator;
 using System.Reflection;
+using Hub.Infrastructure.Database;
+using Hub.Domain.Persistence;
+using Hub.Migrator;
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
@@ -24,30 +24,25 @@ var builder = Host.CreateDefaultBuilder(args)
 
 builder.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
-    // Inicializa o mecanismo do Hub com Autofac
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
         dependencyRegistrars: new List<IDependencyConfiguration>
         {
-            // Adicione suas configurações personalizadas de dependência aqui
+            new DependencyRegistration(),
         },
-        containerBuilder: containerBuilder
+        containerBuilder: containerBuilder,
+        csb: new ConnectionStringBaseVM()
+        {
+            ConnectionStringBaseSchema = "sch",
+        }
     );
 });
 
-// Após a inicialização do Engine, configuramos os serviços
 builder.ConfigureServices((hostContext, services) =>
 {
-    var configuration = hostContext.Configuration;
-
-    // Adiciona suporte a tenants
-    services.AddTenantSupport(configuration);
-
-    // Configura o Entity Framework com SQL Server
-    services.AddEntityFrameworkSqlServer<EntityDbContext>();
-
-    // Adiciona o HostedService para migração de banco de dados
-    services.AddHostedService<DbMigratorHostedService>();
+    services.AddTenantSupport();
+    services.AddEntityFrameworkSqlServer<EntityDbContext>(); 
+    services.AddHostedService<DbMigrationService>(); 
 });
 
 var app = builder.Build();
@@ -55,4 +50,5 @@ var app = builder.Build();
 // Configura o container principal do Engine com o Autofac Root
 Engine.SetContainer((IContainer)app.Services.GetAutofacRoot());
 
+// Inicia a execução da aplicação e o serviço de migração
 await app.RunAsync();

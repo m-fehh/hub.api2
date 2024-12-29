@@ -15,6 +15,8 @@ using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Localization.Interfaces;
 using System.Globalization;
 using Autofac.Core;
+using Hub.Infrastructure.Helpers;
+using Hub.Infrastructure.Database;
 
 namespace Hub.Infrastructure
 {
@@ -70,14 +72,14 @@ namespace Hub.Infrastructure
 
             public void Dispose()
             {
-                Engine.SetThreadSetting(key, originalValue);
+                SetThreadSetting(key, originalValue);
             }
         }
         public static IDisposable SetScopedSetting(string key, string value)
         {
-            var currentValue = Engine.AppSettings[key];
+            var currentValue = AppSettings[key];
 
-            Engine.SetThreadSetting(key, value);
+            SetThreadSetting(key, value);
 
             return new ScopeAppSetting(key, currentValue);
         }
@@ -211,10 +213,10 @@ namespace Hub.Infrastructure
 
             public void Dispose()
             {
-                if (Engine.CurrentScope.Value == this.Scope)
+                if (CurrentScope.Value == this.Scope)
                 {
-                    Engine.CurrentScope.Value.Dispose();
-                    Engine.CurrentScope.Value = null;
+                    CurrentScope.Value.Dispose();
+                    CurrentScope.Value = null;
                 }
 
                 IsDisposed = true;
@@ -230,11 +232,11 @@ namespace Hub.Infrastructure
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Initialize(EngineInitializationParameters engineInitializationParameters)
         {
-            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, containerBuilder: engineInitializationParameters.ContainerBuilder);
+            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, csb: engineInitializationParameters.ConnectionStringBase, containerBuilder: engineInitializationParameters.ContainerBuilder);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ContainerBuilder containerBuilder = null)
+        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ConnectionStringBaseVM csb = null, ContainerBuilder containerBuilder = null)
         {
             ExecutingAssembly = executingAssembly;
 
@@ -266,6 +268,10 @@ namespace Hub.Infrastructure
 
                 TryResolve(out _localizationProvider);
 
+                if (csb != null)
+                {
+                    Resolve<ConnectionStringBaseConfigurator>().Set(csb);
+                }
 
                 IOrmConfiguration ormConfiguration = null;
 
@@ -284,33 +290,83 @@ namespace Hub.Infrastructure
         /// <summary>
         /// Inicia um novo ciclo de vida do injetor de dependências
         /// </summary>
+        /// <param name="copyTenantName">define se irá executar o comando que passa o nome do tenant atual para o novo ciclo criado</param>
+        /// <returns></returns>
+        public static IDisposable BeginLifetimeScope(bool copyTenantName = false)
+        {
+            if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
+            {
+                string tenantName = null;
+
+                //if (copyTenantName)
+                //{
+                //    tenantName = Singleton<INhNameProvider>.Instance.TenantName();
+                //}
+
+                CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
+
+                currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
+
+                if (copyTenantName)
+                {
+                    TenantLifeTimeScope.Start(tenantName);
+                }
+
+                return currentScopeDisposer.Value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Inicia um novo ciclo de vida do injetor de dependências
+        /// </summary>
         /// <param name="tenantName">nome do tenant para o ciclo de vida que será criado</param>
         /// <param name="forceTenantAndCulture"></param>
         /// <returns></returns>
-        //public static IDisposable BeginLifetimeScope(string tenantName, bool forceTenantAndCulture = false)
-        //{
-        //    if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
-        //    {
-        //        CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
+        public static IDisposable BeginLifetimeScope(string tenantName, bool forceTenantAndCulture = false)
+        {
+            if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
+            {
+                CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
 
-        //        currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
+                currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
 
-        //        var tenantLifeTimeScope = Resolve<TenantLifeTimeScope>();
+                if (forceTenantAndCulture)
+                {
+                    var info = Resolve<ITenantManager>().GetInfo();
+                    if (info != null)
+                    {
+                        if (info.DefaultCulture != null)
+                        {
+                            var ci = new CultureInfo(CultureInfoHelper.SetCultureInfo(info.DefaultCulture));
+                            CultureInfo.CurrentCulture = ci;
+                            CultureInfo.CurrentUICulture = ci;
+                        }
 
-        //        tenantLifeTimeScope.Start(tenantName);
+                        TenantLifeTimeScope.Start(info.Subdomain);
+                    }
+                    else
+                    {
+                        TenantLifeTimeScope.Start(tenantName);
+                    }
+                }
+                else
+                {
+                    TenantLifeTimeScope.Start(tenantName);
+                }
 
+                //se não houver culture definida, define a padrão (situação ocorreu no jobs em ambientes linux/docker)
+                if (string.IsNullOrEmpty(CultureInfo.CurrentCulture?.Name))
+                {
+                    CultureInfoHelper.SetDefaultCultureInfo();
+                }
 
-        //        ////se não houver culture definida, define a padrão (situação ocorreu no jobs em ambientes linux/docker)
-        //        //if (string.IsNullOrEmpty(CultureInfo.CurrentCulture?.Name))
-        //        //{
-        //        //    CultureInfoHelper.SetDefaultCultureInfo();
-        //        //}
+                return currentScopeDisposer.Value;
+            }
 
-        //        return currentScopeDisposer.Value;
-        //    }
-
-        //    return null;
-        //}
+            return null;
+        }
 
         /// <summary>
         /// inicia um escopo onde o sistema não irá buscar por configurações específicas do tenant, apenas do environment.

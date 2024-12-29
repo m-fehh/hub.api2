@@ -6,16 +6,11 @@ using Microsoft.EntityFrameworkCore.Update;
 
 namespace Hub.Domain.Persistence
 {
-    internal class DbSchemaAwareSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
+    public class DbSchemaAwareSqlServerMigrationsSqlGenerator : SqlServerMigrationsSqlGenerator
     {
         private readonly ITenantProvider _tenantProvider;
 
-        // Ajuste aqui para usar o tipo correto, que deve ser ICommandBatchPreparer, e não IRelationalAnnotationProvider.
-        public DbSchemaAwareSqlServerMigrationsSqlGenerator(
-            MigrationsSqlGeneratorDependencies dependencies,
-            ICommandBatchPreparer commandBatchPreparer,  // Altere para o tipo correto
-            ITenantProvider tenantProvider)
-            : base(dependencies, commandBatchPreparer)  // Passa o novo parâmetro para a classe base
+        public DbSchemaAwareSqlServerMigrationsSqlGenerator(MigrationsSqlGeneratorDependencies dependencies, ICommandBatchPreparer commandBatchPreparer, ITenantProvider tenantProvider) : base(dependencies, commandBatchPreparer)  
         {
             _tenantProvider = tenantProvider;
         }

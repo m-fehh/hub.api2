@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Hub.Infrastructure.Database.Interfaces;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Hub.Infrastructure.Database.Interfaces;
 
 namespace Hub.Domain.Persistence
 {
-    internal class DbSchemaAwareModelCacheKeyFactory : IModelCacheKeyFactory
+    public class DbSchemaAwareModelCacheKeyFactory : IModelCacheKeyFactory
     {
         private readonly ITenantProvider _tenantProvider;
 
@@ -18,5 +18,4 @@ namespace Hub.Domain.Persistence
             return Tuple.Create(context.GetType(), _tenantProvider.DbSchemaName, designTime);
         }
     }
-
 }

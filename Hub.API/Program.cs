@@ -4,6 +4,8 @@ using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Infrastructure;
 using System.Reflection;
 using Hub.Application.Configurations;
+using System.Runtime.Intrinsics.X86;
+using Hub.Infrastructure.Database;
 //using Hub.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,8 +30,11 @@ builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
         {
             new DependencyRegistration()
         },
-        containerBuilder: containerBuilder
-    );
+        containerBuilder: containerBuilder,
+        csb: new ConnectionStringBaseVM()
+        {
+            ConnectionStringBaseSchema = "sch",
+        });
 });
 
 

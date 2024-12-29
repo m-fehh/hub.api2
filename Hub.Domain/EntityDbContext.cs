@@ -4,56 +4,55 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Hub.Domain
+public class EntityDbContext : DbContext
 {
-    public class EntityDbContext : DbContext
+    private readonly ITenantProvider _tenantProvider;
+
+    public DbSet<Customer> Customers { get; set; } = null!;
+    public DbSet<Teste> Testes { get; set; } = null!;
+
+    public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
     {
-        private readonly ITenantProvider _tenantProvider;
+        _tenantProvider = tenantProvider;
+    }
 
-        public DbSet<Customer> Customers { get; set; } = null!;
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
 
-        public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
+        // Usa o schema específico para cada tenant na configuração de migração
+        optionsBuilder.UseSqlServer(_tenantProvider.ConnectionString, o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, _tenantProvider.DbSchemaName));
+
+        // Ignora o aviso de alterações pendentes no modelo
+        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder.Properties<string>()
+            .HaveMaxLength(255);
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Configura o schema do tenant
+        modelBuilder.HasDefaultSchema(_tenantProvider.DbSchemaName);
+
+        base.OnModelCreating(modelBuilder);
+
+        ConfigureCustomer(modelBuilder);
+    }
+
+    private static void ConfigureCustomer(ModelBuilder builder)
+    {
+        builder.Entity<Customer>(b =>
         {
-            _tenantProvider = tenantProvider;
-        }
+            var table = b.ToTable("Customers");
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
-
-            optionsBuilder
-                .UseSqlServer(
-                    _tenantProvider.ConnectionString,
-                    o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, _tenantProvider.DbSchemaName))
-                .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
-        }
-
-        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-        {
-            base.ConfigureConventions(configurationBuilder);
-
-            configurationBuilder.Properties<string>()
-                .HaveMaxLength(255);
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.HasDefaultSchema(_tenantProvider.DbSchemaName);   // set schema
-
-            base.OnModelCreating(modelBuilder);
-
-            ConfigureCustomer(modelBuilder);
-        }
-
-        private static void ConfigureCustomer(ModelBuilder builder)
-        {
-            builder.Entity<Customer>(b =>
-            {
-                var table = b.ToTable("Customers");
-
-                table.Property(p => p.CustomerId).ValueGeneratedOnAdd();
-                table.HasKey(p => p.CustomerId).HasName("PK_CustomerId");
-            });
-        }
+            table.Property(p => p.CustomerId).ValueGeneratedOnAdd();
+            table.HasKey(p => p.CustomerId).HasName("PK_CustomerId");
+        });
     }
 }

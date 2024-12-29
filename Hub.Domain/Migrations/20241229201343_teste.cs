@@ -5,17 +5,13 @@
 namespace Hub.Domain.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTenantSchemaMigration : Migration
+    public partial class teste : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.EnsureSchema(
-                name: "dbo");
-
             migrationBuilder.CreateTable(
                 name: "Customers",
-                schema: "dbo",
                 columns: table => new
                 {
                     CustomerId = table.Column<long>(type: "bigint", nullable: false)
@@ -27,14 +23,28 @@ namespace Hub.Domain.Migrations
                 {
                     table.PrimaryKey("PK_CustomerId", x => x.CustomerId);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "FuckYou",
+                columns: table => new
+                {
+                    Fuck = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FuckYou", x => x.Fuck);
+                });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Customers",
-                schema: "dbo");
+                name: "Customers");
+
+            migrationBuilder.DropTable(
+                name: "FuckYou");
         }
     }
 }
