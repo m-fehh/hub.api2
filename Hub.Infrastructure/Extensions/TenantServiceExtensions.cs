@@ -1,7 +1,8 @@
 ﻿using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.MultiTenant;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Hub.Migrator.Services
+namespace Hub.Infrastructure.Extensions
 {
     public static class TenantServiceExtensions
     {

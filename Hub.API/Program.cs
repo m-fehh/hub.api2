@@ -6,6 +6,8 @@ using System.Reflection;
 using Hub.Application.Configurations;
 using System.Runtime.Intrinsics.X86;
 using Hub.Infrastructure.Database;
+using Hub.Infrastructure.Extensions;
+using Hub.Domain.Persistence;
 //using Hub.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +44,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAuthorization();
+
+builder.Services.AddTenantSupport();
+builder.Services.AddEntityFrameworkSqlServer<EntityDbContext>();
 
 var app = builder.Build();
 

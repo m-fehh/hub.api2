@@ -5,7 +5,7 @@ using Hub.Infrastructure.DependencyInjection.Interfaces;
 using System.Reflection;
 using Hub.Infrastructure.Database;
 using Hub.Domain.Persistence;
-using Hub.Migrator.Services;
+using Hub.Infrastructure.Extensions;
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
