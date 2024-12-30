@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hub.Infrastructure.Database.Entity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,9 +10,9 @@ using System.Threading.Tasks;
 namespace Hub.Domain.Entities
 {
     [Table("FuckYou")]
-    public class Teste
+    public class Teste : BaseEntity
     {
         [Key]
-        public int Fuck { get; set; }
+        public override long Id { get; set; }
     }
 }

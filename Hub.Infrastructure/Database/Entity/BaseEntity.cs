@@ -1,6 +1,6 @@
-﻿using Hub.Domain.Common.Interfaces;
+﻿using Hub.Infrastructure.Database.Entity.Interfaces;
 
-namespace Hub.Domain.Common
+namespace Hub.Infrastructure.Database.Entity
 {
     [Serializable]
     public abstract class BaseEntity : IBaseEntity

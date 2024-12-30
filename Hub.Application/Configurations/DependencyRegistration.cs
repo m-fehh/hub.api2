@@ -7,7 +7,6 @@ namespace Hub.Application.Configurations
     {
         public void Register(ContainerBuilder builder) 
         {
-
         }
 
         public int Order => 1;

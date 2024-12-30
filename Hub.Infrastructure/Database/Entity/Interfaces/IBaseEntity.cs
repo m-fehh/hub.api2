@@ -1,4 +1,4 @@
-﻿namespace Hub.Domain.Common.Interfaces
+﻿namespace Hub.Infrastructure.Database.Entity.Interfaces
 {
     public interface IBaseEntity : ICloneable
     {
