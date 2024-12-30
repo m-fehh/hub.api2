@@ -290,25 +290,19 @@ namespace Hub.Infrastructure
         /// <summary>
         /// Inicia um novo ciclo de vida do injetor de dependências
         /// </summary>
-        /// <param name="copyTenantName">define se irá executar o comando que passa o nome do tenant atual para o novo ciclo criado</param>
+        /// <param name="preserveTenantScope">define se irá executar o comando que passa o nome do tenant atual para o novo ciclo criado</param>
         /// <returns></returns>
-        public static IDisposable BeginLifetimeScope(bool copyTenantName = false)
+        public static IDisposable BeginLifetimeScope(bool preserveTenantScope = false)
         {
             if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
             {
-                string tenantName = null;
-
-                //if (copyTenantName)
-                //{
-                //    tenantName = Singleton<INhNameProvider>.Instance.TenantName();
-                //}
-
                 CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
-
                 currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
 
-                if (copyTenantName)
+                if (preserveTenantScope)
                 {
+                    string tenantName = null;
+                    //string tenantName = Singleton<INhNameProvider>.Instance.TenantName();
                     TenantLifeTimeScope.Start(tenantName);
                 }
 
@@ -322,9 +316,9 @@ namespace Hub.Infrastructure
         /// Inicia um novo ciclo de vida do injetor de dependências
         /// </summary>
         /// <param name="tenantName">nome do tenant para o ciclo de vida que será criado</param>
-        /// <param name="forceTenantAndCulture"></param>
+        /// <param name="applyTenantSettings"></param>
         /// <returns></returns>
-        public static IDisposable BeginLifetimeScope(string tenantName, bool forceTenantAndCulture = false)
+        public static IDisposable BeginLifetimeScope(string tenantName, bool applyTenantSettings = false)
         {
             if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
             {
@@ -332,7 +326,7 @@ namespace Hub.Infrastructure
 
                 currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
 
-                if (forceTenantAndCulture)
+                if (applyTenantSettings)
                 {
                     var info = Resolve<ITenantManager>().GetInfo();
                     if (info != null)
