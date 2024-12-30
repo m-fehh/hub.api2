@@ -10,6 +10,7 @@ using Autofac.Core.Registration;
 using Hub.Infrastructure.Logger.Interfaces;
 using Hub.Infrastructure.Cache;
 using Hub.Infrastructure.Cache.Interfaces;
+using Hub.Infrastructure.Generator;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -32,6 +33,9 @@ namespace Hub.Infrastructure.DependencyInjection
 
             builder.RegisterType<RedisService>().AsSelf().SingleInstance();
             builder.RegisterType<RedisService>().As<IRedisService>().SingleInstance();
+
+            builder.RegisterType<RandomGeneration>().As<IRandomGeneration>().SingleInstance();
+
 
         }
 
