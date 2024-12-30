@@ -1,11 +1,11 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Hub.Infrastructure;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
 using System.Reflection;
 using Hub.Infrastructure.Database;
 using Hub.Domain.Persistence;
 using Hub.Infrastructure.Extensions;
+using Hub.Infrastructure.Architecture;
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())

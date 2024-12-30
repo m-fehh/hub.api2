@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Autofac.Interfaces;
 using Hub.Infrastructure.Database;
 using Hub.Infrastructure.DependencyInjection.Interfaces;

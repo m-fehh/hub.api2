@@ -1,5 +1,5 @@
-﻿using Hub.Infrastructure;
-using Hub.Infrastructure.Security.Interfaces;
+﻿using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.Security.Interfaces;
 
 namespace Hub.Web.Middlewares
 {

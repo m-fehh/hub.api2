@@ -2,19 +2,21 @@
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
-using Hub.Infrastructure.Autofac;
-using Hub.Infrastructure.Logger;
 using Autofac.Core;
 using Hub.Infrastructure.Autofac.Interfaces;
 using Autofac.Core.Registration;
-using Hub.Infrastructure.Logger.Interfaces;
-using Hub.Infrastructure.Cache;
-using Hub.Infrastructure.Cache.Interfaces;
 using Hub.Infrastructure.Generator;
 using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Autofac.Builders;
-using Hub.Infrastructure.DistributedLock.Interfaces;
-using Hub.Infrastructure.DistributedLock;
+using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.Cache;
+using Hub.Infrastructure.Architecture.Cache.Interfaces;
+using Hub.Infrastructure.Architecture.DistributedLock;
+using Hub.Infrastructure.Architecture.DistributedLock.Interfaces;
+using Hub.Infrastructure.Architecture.Logger;
+using Hub.Infrastructure.Architecture.Logger.Interfaces;
+using Hub.Infrastructure.Architecture.Localization.Interfaces;
+using Hub.Infrastructure.Architecture.Localization;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -52,7 +54,7 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<RedLockManager>().AsSelf().SingleInstance();
             builder.RegisterType<RedLockManager>().As<ILockManager>().SingleInstance();
 
-
+            builder.RegisterType<DefaultLocalizationProvider>().As<ILocalizationProvider>().AsSelf();
         }
 
         void ActivingRepository(IActivatingEventArgs<object> e)

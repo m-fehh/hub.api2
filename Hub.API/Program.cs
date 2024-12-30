@@ -1,13 +1,13 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
-using Hub.Infrastructure;
 using System.Reflection;
 using Hub.Application.Configurations;
 using System.Runtime.Intrinsics.X86;
 using Hub.Infrastructure.Database;
 using Hub.Infrastructure.Extensions;
 using Hub.Domain.Persistence;
+using Hub.Infrastructure.Architecture;
 //using Hub.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);

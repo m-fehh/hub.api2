@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.Autofac;
+﻿using Hub.Infrastructure.Architecture;
 using System;
 using System.Collections.Generic;
 using System.Linq;

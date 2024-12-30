@@ -11,6 +11,7 @@
     <PackageReference Include="EPPlus" Version="6.1.2" />
     <PackageReference Include="FirebaseAdmin" Version="3.1.0" />
     <PackageReference Include="Hangfire" Version="1.8.3" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.3" />
     <PackageReference Include="Hangfire.Console" Version="1.4.3" />
     <PackageReference Include="Hangfire.Heartbeat" Version="0.6.0" />
     <PackageReference Include="Hangfire.MemoryStorage.Core" Version="1.4.0" />
@@ -20,6 +21,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0" />
     <PackageReference Include="Shyjus.BrowserDetector" Version="2.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
@@ -29,6 +31,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Hub.Application\Hub.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Content\js\" />
+    <Folder Include="Content\img\" />
   </ItemGroup>
 
 </Project>

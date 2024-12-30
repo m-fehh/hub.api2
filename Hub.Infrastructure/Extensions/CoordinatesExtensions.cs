@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.Localization;
+﻿using Hub.Infrastructure.Architecture.Localization;
 
 namespace Hub.Infrastructure.Extensions
 {

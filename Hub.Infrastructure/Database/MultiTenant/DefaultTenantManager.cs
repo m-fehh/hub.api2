@@ -1,6 +1,7 @@
 ﻿using Dapper;
+using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.Cache;
 using Hub.Infrastructure.Autofac;
-using Hub.Infrastructure.Cache;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.Models;
 using Microsoft.Data.SqlClient;

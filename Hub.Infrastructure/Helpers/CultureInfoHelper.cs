@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using Hub.Infrastructure.Architecture;
 
 namespace Hub.Infrastructure.Helpers
 {

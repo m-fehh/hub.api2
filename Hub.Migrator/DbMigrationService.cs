@@ -1,6 +1,6 @@
 ﻿using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Hub.Infrastructure.Autofac;
+using Hub.Infrastructure.Architecture;
 
 public class DbMigrationService : IHostedService
 {

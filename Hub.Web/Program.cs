@@ -12,15 +12,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Autofac.Extensions.DependencyInjection;
 using OfficeOpenXml;
-using Hub.Infrastructure;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Application.Configurations;
 using Hub.Infrastructure.Database;
-using Hub.Infrastructure.Localization;
-using Hub.Infrastructure.Resources;
-using Hub.Infrastructure.DistributedLock;
-using Hub.Infrastructure.Cache.Interfaces;
-using Hub.Infrastructure.Autofac;
 using Hangfire;
 using WebEssentials.AspNetCore.OutputCaching;
 using Hangfire.Redis.StackExchange;
@@ -28,7 +22,6 @@ using Hangfire.MemoryStorage;
 using Hangfire.Console;
 using Hangfire.Heartbeat;
 using Microsoft.OpenApi.Models;
-using Hub.Infrastructure.Cache;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Hub.Web.Middlewares;
@@ -37,6 +30,14 @@ using Hub.Domain.Persistence;
 using Hub.Application.Search;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Application.Resource;
+using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.Cache;
+using Hub.Infrastructure.Architecture.Cache.Interfaces;
+using Hub.Infrastructure.Architecture.DistributedLock;
+using Hub.Infrastructure.Architecture.Localization;
+using Hub.Application.Hangfire;
+using Hub.Infrastructure.Architecture.Resources;
+using Hub.Infrastructure.Web.ModelBinder;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -223,10 +224,10 @@ builder.Services
                 int.TryParse(hangfireRedisDBNumber, out var dbNumber);
 
                 configuration.UseRedisStorage(
-                    ConnectionMultiplexer.Connect(Engine.ConnectionString("hangfire-redis")),
+                    ConnectionMultiplexer.Connect(Engine.ConnectionString("hangfire")),
                     new RedisStorageOptions()
                     {
-                        Prefix = "elos:{hangfire}:" + hfServerName,
+                        Prefix = "hub:{hangfire}:" + hfServerName,
                         Db = dbNumber,
                         ExpiryCheckInterval = TimeSpan.FromMinutes(1),
                         //ajuste para as tarefas não sumam do dashboard do hangfire após 30 minutos
@@ -315,8 +316,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // using System.Reflection;
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    //var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    //options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
 });
 
@@ -337,9 +338,9 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.RoutePrefix = "iam-docs";
-    c.DocumentTitle = "EVUP API - Documentação";
+    c.DocumentTitle = "HUB API - Documentação";
     c.InjectStylesheet("/Content/css/swagger.css");
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EVUP API");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "HUB API");
 
 
     c.DisplayRequestDuration();
@@ -394,7 +395,7 @@ app.UseStatusCodePages(context =>
 });
 
 app.UseRequestCulture();
-//app.UseElosRequestTenant();
+//app.UsehubRequestTenant();
 app.UseRequestAuth();
 
 app.UseOutputCaching();
@@ -406,9 +407,9 @@ app.UseAuthorization();
 
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    DashboardTitle = "ELOS - Hangfire",
+    DashboardTitle = "HUB - Hangfire",
     DisplayStorageConnectionString = false,
-    //Authorization = new[] { new HangfireDashboardAuthorizationFilter() },
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter() },
     IgnoreAntiforgeryToken = true
 });
 
@@ -442,7 +443,7 @@ app.UseExceptionHandler(appError =>
             if (Engine.AppSettings["LogErrosOnAzureStorageTable"] == "True")
             {
                 var ex = contextFeature.Error;
-                log4net.LogManager.GetLogger("Sch.SystemInfo").Error(ex.CreateExceptionString(), ex);;
+                log4net.LogManager.GetLogger("Sch.SystemInfo").Error(ex.CreateExceptionString(), ex); ;
             }
         }
     });
@@ -503,7 +504,8 @@ startupTasks.Add(Task.Run(() =>
 
 startupTasks.Add(Task.Run(() =>
 {
-    SearchBootstrapper.Initialize(new List<ISearchItem>() {
+    SearchBootstrapper.Initialize(new List<ISearchItem>()
+    {
         //new SearchAddressCity(),
     });
 
@@ -513,12 +515,10 @@ Task.WaitAll(startupTasks.ToArray());
 
 try
 {
-    Singleton<LoopTenantManager>.Instance.LoopTenants(
-        "SignalRStartup",
-        () =>
-        {
-            SignalRStartup.Init();
-        });
+    Singleton<LoopTenantManager>.Instance.LoopTenants("SignalRStartup", () =>
+    {
+        SignalRStartup.Init();
+    });
 }
 catch (Exception ex)
 {

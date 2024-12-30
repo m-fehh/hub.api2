@@ -1,9 +1,10 @@
-﻿using Hub.Infrastructure.Database.Entity;
+﻿using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.Logger;
+using Hub.Infrastructure.Architecture.Logger.Enums;
+using Hub.Infrastructure.Architecture.Logger.Interfaces;
+using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.Logger;
-using Hub.Infrastructure.Logger.Enums;
-using Hub.Infrastructure.Logger.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hub.Infrastructure.Database

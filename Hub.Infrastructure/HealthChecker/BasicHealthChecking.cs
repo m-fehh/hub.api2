@@ -1,4 +1,5 @@
-﻿using Hub.Infrastructure.Database;
+﻿using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Database;
 using Hub.Infrastructure.HealthChecker.Builders;
 using Hub.Infrastructure.HealthChecker.Enums;
 using Hub.Infrastructure.HealthChecker.Interfaces;

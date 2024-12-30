@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure;
+﻿using Hub.Infrastructure.Architecture;
 
 namespace Hub.Web.Middlewares
 {

@@ -1,4 +1,5 @@
-﻿using Hub.Infrastructure.Extensions;
+﻿using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Extensions;
 using Hub.Infrastructure.HealthChecker.Enums;
 using System.Linq.Expressions;
 
