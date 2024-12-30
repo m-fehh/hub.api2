@@ -11,6 +11,10 @@ using Hub.Infrastructure.Logger.Interfaces;
 using Hub.Infrastructure.Cache;
 using Hub.Infrastructure.Cache.Interfaces;
 using Hub.Infrastructure.Generator;
+using Hub.Infrastructure.Database.Entity;
+using Hub.Infrastructure.Autofac.Builders;
+using Hub.Infrastructure.DistributedLock.Interfaces;
+using Hub.Infrastructure.DistributedLock;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -23,18 +27,30 @@ namespace Hub.Infrastructure.DependencyInjection
 
             builder.RegisterType<ConnectionStringBaseConfigurator>().AsSelf().SingleInstance();
 
+            builder.RegisterType<EngineInitializationParametersBuilder>().AsImplementedInterfaces();
+            builder.RegisterType<EngineInitializationParametersBuilder>().AsSelf();
+
             builder.RegisterType<TenantLifeTimeScope>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<DefaultTenantManager>().As<ITenantManager>().SingleInstance();
 
             builder.RegisterType<IgnoreLogScope>().AsSelf().InstancePerLifetimeScope();
 
+            builder.RegisterType<Repository>().AsImplementedInterfaces();
             builder.RegisterGeneric(typeof(Repository<>)).As(typeof(IRepository<>)).OnActivating(ActivingRepository);
+
             builder.RegisterType<LogManager>().As<ILogManager>().SingleInstance();
 
             builder.RegisterType<RedisService>().AsSelf().SingleInstance();
             builder.RegisterType<RedisService>().As<IRedisService>().SingleInstance();
+            builder.RegisterType<CacheManager>().AsSelf().SingleInstance();
+
+            builder.RegisterType<IgnoreLogScope>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<IgnoreModificationControl>().AsSelf().InstancePerLifetimeScope();
 
             builder.RegisterType<RandomGeneration>().As<IRandomGeneration>().SingleInstance();
+
+            builder.RegisterType<RedLockManager>().AsSelf().SingleInstance();
+            builder.RegisterType<RedLockManager>().As<ILockManager>().SingleInstance();
 
 
         }
