@@ -38,6 +38,7 @@ builder.ConfigureContainer<ContainerBuilder>(containerBuilder =>
     );
 });
 
+
 builder.ConfigureServices((hostContext, services) =>
 {
     services.AddTenantSupport();

@@ -1,25 +1,16 @@
 ﻿using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Hub.Infrastructure.Autofac;
-using Hub.Infrastructure.Database;
-using Microsoft.Extensions.Logging;
 
 public class DbMigrationService : IHostedService
 {
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
-    private readonly ITenantProvider _tenantProvider;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DbMigrationService> _logger;
 
-    public DbMigrationService(
-        IHostApplicationLifetime hostApplicationLifetime,
-        ITenantProvider tenantProvider,
-        IServiceProvider serviceProvider,
-        ILogger<DbMigrationService> logger)
+    public DbMigrationService(IHostApplicationLifetime hostApplicationLifetime, IServiceProvider serviceProvider, ILogger<DbMigrationService> logger)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
-        _tenantProvider = tenantProvider;
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
@@ -45,29 +36,31 @@ public class DbMigrationService : IHostedService
 
     private async Task MigrateAsync()
     {
-        var tenants = _tenantProvider.Tenants;
-
-        foreach (var tenant in tenants)
+        await Singleton<LoopTenantManager>.Instance.LoopTenants("MigrateAsync", async () =>
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                using (Engine.BeginLifetimeScope(tenant.Subdomain))
+                try
                 {
-                    _logger.LogInformation($"Iniciando migração para o tenant {tenant.Name}...");
-
-                    try
-                    {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<EntityDbContext>();
-                        await dbContext.Database.MigrateAsync();
-
-                        _logger.LogInformation($"Migração concluída para o tenant {tenant.Name} (schema: {_tenantProvider.DbSchemaName})");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Erro ao migrar o tenant {tenant.Name}");
-                    }
+                    var dbContext = scope.ServiceProvider.GetRequiredService<EntityDbContext>();
+                    await dbContext.Database.MigrateAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Erro ao migrar o banco de dados.");
                 }
             }
-        }
+        },
+        (logType, message) =>
+        {
+            if (logType.Equals("info", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation(message);
+            }
+            else if (logType.Equals("error", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogError(message);
+            }
+        });
     }
 }

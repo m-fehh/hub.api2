@@ -245,6 +245,8 @@ namespace Hub.Infrastructure
                 TypeNameHandling = TypeNameHandling.Auto
             };
 
+            Singleton<LoopTenantManager>.Instance = new LoopTenantManager();
+
             if (dependencyRegistrars == null)
             {
                 dependencyRegistrars = new List<IDependencyConfiguration>();
