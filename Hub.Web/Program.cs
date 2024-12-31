@@ -39,6 +39,7 @@ using Hub.Application.Hangfire;
 using Hub.Infrastructure.Architecture.Resources;
 using Hub.Infrastructure.Web.ModelBinder;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
+using Hub.Infrastructure.Database.Entity;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -85,7 +86,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
         });
 });
 
-//LocalizationAttributeBootstrap.Initialize();
+LocalizationAttributeBootstrap.Initialize();
 
 builder.Services.AddTenantSupport();
 builder.Services.AddEntityFrameworkSqlServer<EntityDbContext>();
@@ -98,9 +99,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddBrowserDetection();
-
 builder.Services.AddResponseCaching();
 
 builder.Services.AddControllersWithViews(opt =>
@@ -365,12 +364,7 @@ else
 }
 
 app.UseForwardedHeaders();
-
 app.UseWebOptimizer();
-
-//não aplicável em containers com proxy reverso
-//app.UseHttpsRedirection();
-
 app.UseDefaultFiles();
 
 app.UseStaticFiles(new StaticFileOptions
@@ -510,7 +504,7 @@ startupTasks.Add(Task.Run(() =>
 {
     SearchBootstrapper.Initialize(new List<ISearchItem>()
     {
-        //new SearchAddressCity(),
+        new SearchDocumentType(),
     });
 
 }));

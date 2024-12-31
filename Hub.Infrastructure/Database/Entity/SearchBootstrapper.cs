@@ -1,8 +1,7 @@
 ﻿using Hub.Infrastructure.Architecture;
-using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 
-namespace Hub.Application.Search
+namespace Hub.Infrastructure.Database.Entity
 {
     public static class SearchBootstrapper
     {

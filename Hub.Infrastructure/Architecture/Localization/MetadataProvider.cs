@@ -159,7 +159,7 @@ namespace Hub.Infrastructure.Architecture.Localization
         public ConcurrentDictionary<string, LocalizationAttributeItem> Itens { get; set; }
     }
 
-    internal static class LocalizationAttributeBootstrap
+    public static class LocalizationAttributeBootstrap
     {
         public static void Initialize()
         {
