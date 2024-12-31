@@ -203,7 +203,6 @@ namespace Hub.Infrastructure.Database
             return _context.Database.BeginTransaction();
         }
 
-
         public void Commit()
         {
             if (_context.Database.CurrentTransaction != null)

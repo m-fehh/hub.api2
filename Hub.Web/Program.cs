@@ -38,6 +38,7 @@ using Hub.Infrastructure.Architecture.Localization;
 using Hub.Application.Hangfire;
 using Hub.Infrastructure.Architecture.Resources;
 using Hub.Infrastructure.Web.ModelBinder;
+using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -47,10 +48,10 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<BrotliCompressionProvider>();
 });
 
-builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
-{
-    options.Level = (System.IO.Compression.CompressionLevel)CompressionLevel.BestCompression;
-});
+//builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+//{
+//    options.Level = (System.IO.Compression.CompressionLevel)CompressionLevel.BestCompression;
+//});
 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
@@ -68,6 +69,11 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
 {
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
+        tasks:
+        new List<IStartupTask>()
+        {
+            new StartupTask()
+        },
         dependencyRegistrars: new List<IDependencyConfiguration>
         {
             new DependencyRegistration()
@@ -315,10 +321,8 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    // using System.Reflection;
-    //var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    //options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
 

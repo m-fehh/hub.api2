@@ -17,6 +17,9 @@ using Hub.Infrastructure.Helpers;
 using Hub.Infrastructure.Database;
 using Hub.Infrastructure.Architecture.Localization.Interfaces;
 using Hub.Infrastructure.Architecture.Mapper;
+using Hub.Infrastructure.Architecture.Tasks.Interfaces;
+using System.Threading.Tasks;
+using Hub.Infrastructure.Architecture.Tasks;
 
 namespace Hub.Infrastructure.Architecture
 {
@@ -190,6 +193,14 @@ namespace Hub.Infrastructure.Architecture
             }
         }
 
+        public static void RegisterAutoMapperStartup(IAutoMapperStartup register)
+        {
+            if (_autoMapperStartups == null) _autoMapperStartups = new List<IAutoMapperStartup>();
+
+            _autoMapperStartups.Add(register);
+        }
+
+
         #endregion
 
         public static Assembly ExecutingAssembly { get; private set; }
@@ -232,11 +243,11 @@ namespace Hub.Infrastructure.Architecture
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Initialize(EngineInitializationParameters engineInitializationParameters)
         {
-            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, csb: engineInitializationParameters.ConnectionStringBase, containerBuilder: engineInitializationParameters.ContainerBuilder);
+            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, tasks: engineInitializationParameters.StartupTasks, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, csb: engineInitializationParameters.ConnectionStringBase, containerBuilder: engineInitializationParameters.ContainerBuilder);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Initialize(Assembly executingAssembly, IList<IDependencyConfiguration> dependencyRegistrars = null, ConnectionStringBaseVM csb = null, ContainerBuilder containerBuilder = null)
+        public static void Initialize(Assembly executingAssembly, IList<IStartupTask> tasks = null, IList<IDependencyConfiguration> dependencyRegistrars = null, ConnectionStringBaseVM csb = null, ContainerBuilder containerBuilder = null)
         {
             ExecutingAssembly = executingAssembly;
 
@@ -258,6 +269,16 @@ namespace Hub.Infrastructure.Architecture
 
             initializeAction = new Action(() =>
             {
+                if (tasks == null)
+                {
+                    tasks = new List<IStartupTask>();
+                }
+
+                tasks.Add(new StartupTask());
+
+                //startup tasks
+                tasks.OrderBy(t => t.Order).ToList().ForEach(x => x.Execute());
+
                 if (_autoMapperStartups?.Count > 0)
                 {
                     var config = new MapperConfiguration(cfg =>
