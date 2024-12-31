@@ -8,10 +8,28 @@ public class EntityDbContext : DbContext
 {
     private readonly ITenantProvider _tenantProvider;
 
-    //public DbSet<Customer> Customers { get; set; } = null!;
-    //public DbSet<Teste> Testes { get; set; } = null!;
+
+    #region CONFIGURATIONS SYSTEM 
 
     public DbSet<DocumentType> DocumentTypes { get; set; } = null!;
+
+    public DbSet<ProfileGroup> ProfileGroups { get; set; } = null!;
+
+    public DbSet<AccessRule> AccessRules { get; set; } = null!;
+
+    
+
+    #endregion
+
+    #region USERS
+
+    public DbSet<PortalUser> PortalUsers { get; set; } = null!; 
+
+    public DbSet<Person> Persons { get; set; } = null!; 
+
+    #endregion
+
+
 
     public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
     {
@@ -45,6 +63,5 @@ public class EntityDbContext : DbContext
         modelBuilder.HasDefaultSchema(_tenantProvider.DbSchemaName);
 
         base.OnModelCreating(modelBuilder);
-
     }
 }

@@ -11,10 +11,6 @@ namespace Hub.Domain.Entities
         [Key]
         public override long Id { get; set; }
 
-        //[Required]
-        //[StringLength(100)]
-        //public virtual string Name { get; set; }
-
         [Required]
         [StringLength(50)]
         public virtual string Login { get; set; }
@@ -24,19 +20,34 @@ namespace Hub.Domain.Entities
         [StringLength(50)]
         public virtual string Password { get; set; }
 
+        public long PersonId { get; set; }
+
+        [ForeignKey(nameof(PersonId))]
+        public virtual Person Person { get; set; }
+
+        public long ProfileId { get; set; }
+
+        [NotMapped]
+        [ForeignKey(nameof(ProfileId))]
+        public virtual IProfileGroup Profile { get; set; }
+
         [IgnoreLog]
         [StringLength(50)]
         public virtual string? TempPassword { get; set; }
 
-        public virtual bool Inactive { get; set; }
 
         [IgnoreLog]
         public virtual bool ChangingPass { get; set; }
+        
+        public virtual bool Inactive { get; set; }
 
         [Required]
         [StringLength(50)]
         public virtual string Keyword { get; set; }
 
+        public virtual string IpAddress { get; set; }
+
+        public virtual DateTime? LastAccessDate { get; set; }
 
         [IgnoreLog]
         public virtual DateTime? CreationUTC { get; set; }

@@ -37,7 +37,6 @@ namespace Hub.Infrastructure.Database
                 if (!Engine.Resolve<IgnoreModificationControl>().Ignore)
                 {
                     (entity as IModificationControl).CreationUTC = DateTime.UtcNow;
-                    (entity as IModificationControl).LastUpdateUTC = DateTime.UtcNow;
                 }
             }
 
@@ -61,7 +60,6 @@ namespace Hub.Infrastructure.Database
                 if (!Engine.Resolve<IgnoreModificationControl>().Ignore)
                 {
                     (entity as IModificationControl).CreationUTC = DateTime.UtcNow;
-                    (entity as IModificationControl).LastUpdateUTC = DateTime.UtcNow;
                 }
             }
 
@@ -147,8 +145,23 @@ namespace Hub.Infrastructure.Database
         {
             get
             {
-                return _context.Set<T>();
+                return IncludeAll(_context.Set<T>());
             }
+        }
+
+        public IQueryable<T> IncludeAll<T>(IQueryable<T> query) where T : class
+        {
+            var entityType = _context.Model.FindEntityType(typeof(T));
+
+            var navigationProperties = entityType.GetNavigations();
+
+            // Itera sobre todas as propriedades de navegação e aplica o Include
+            foreach (var navigation in navigationProperties)
+            {
+                query = query.Include(navigation.Name);
+            }
+
+            return query;
         }
 
         private void Log(T entity, ELogAction action)

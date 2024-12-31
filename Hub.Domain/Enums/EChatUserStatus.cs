@@ -1,4 +1,4 @@
-﻿namespace Hub.Application.Enums
+﻿namespace Hub.Domain.Enums
 {
     public enum EChatUserStatus
     {
