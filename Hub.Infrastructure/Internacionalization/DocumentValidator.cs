@@ -48,7 +48,7 @@ namespace Hub.Infrastructure.Internacionalization
                     return BrazilianDocumentValidator.ValidateCPF(document);
                 case ESpecialDocumentValidation.CNPJ:
                     return BrazilianDocumentValidator.ValidateCNPJ(document);
-                case ESpecialDocumentValidation.ChileanRUT:
+                case ESpecialDocumentValidation.RUT:
                     return ChileanDocumentValidator.ValidateRUT(document);
                 case ESpecialDocumentValidation.ColombianCC:
                     return ColombianDocumentValidator.ValidateCC(document);
@@ -71,7 +71,7 @@ namespace Hub.Infrastructure.Internacionalization
                 { "US", ESpecialDocumentValidation.EUASSN }, // Estados Unidos (Social Security Number)
                 { "BR", ESpecialDocumentValidation.CPF }, // Brasil (Cadastro de Pessoas Físicas)
                 { "AR", ESpecialDocumentValidation.ArgentineDNI }, // Argentina (Documento Nacional de Identidad)
-                { "CL", ESpecialDocumentValidation.ChileanRUT }, // Chile (Rol Único Nacional)
+                { "CL", ESpecialDocumentValidation.RUT }, // Chile (Rol Único Nacional)
                 { "PE", ESpecialDocumentValidation.ArgentineDNI }, // Peru  (Documento Nacional de Identidad)
                 { "CO", ESpecialDocumentValidation.ColombianCC }, // Colômbia
                 { "VE", ESpecialDocumentValidation.ColombianCC }, // Venezuela

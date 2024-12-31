@@ -1,4 +1,5 @@
-﻿using Hub.Infrastructure.Database.Interfaces;
+﻿using Hub.Domain.Entities;
+using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -9,6 +10,8 @@ public class EntityDbContext : DbContext
 
     //public DbSet<Customer> Customers { get; set; } = null!;
     //public DbSet<Teste> Testes { get; set; } = null!;
+
+    public DbSet<DocumentType> DocumentTypes { get; set; } = null!;
 
     public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
     {
@@ -30,8 +33,10 @@ public class EntityDbContext : DbContext
     {
         base.ConfigureConventions(configurationBuilder);
 
-        configurationBuilder.Properties<string>()
-            .HaveMaxLength(255);
+        configurationBuilder.Properties<string>().HaveMaxLength(255);
+
+        // Configura todas as propriedades do tipo Enum para serem armazenadas como string
+        configurationBuilder.Properties<Enum>().HaveConversion<string>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,15 +47,4 @@ public class EntityDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
     }
-
-    //private static void ConfigureCustomer(ModelBuilder builder)
-    //{
-    //    builder.Entity<Customer>(b =>
-    //    {
-    //        var table = b.ToTable("Customers");
-
-    //        table.Property(p => p.CustomerId).ValueGeneratedOnAdd();
-    //        table.HasKey(p => p.CustomerId).HasName("PK_CustomerId");
-    //    });
-    //}
 }

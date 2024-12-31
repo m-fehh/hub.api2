@@ -6,6 +6,7 @@ using Hub.Infrastructure.Database;
 using Hub.Domain.Persistence;
 using Hub.Infrastructure.Extensions;
 using Hub.Infrastructure.Architecture;
+using Hub.Migrator.Seeders;
 
 var builder = Host.CreateDefaultBuilder(args)
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
@@ -43,8 +44,20 @@ builder.ConfigureServices((hostContext, services) =>
 {
     services.AddTenantSupport();
     services.AddEntityFrameworkSqlServer<EntityDbContext>(); 
-    services.AddHostedService<DbMigrationService>(); 
+    services.AddHostedService<DbMigrationService>();
+
+    // Registrar os seeders automaticamente
+    var seederTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => typeof(ISeeder).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+    foreach (var seederType in seederTypes)
+    {
+        services.AddTransient(seederType);
+    }
+
+    // Registrar o SeederExecutor para orquestrar os seeders
+    services.AddTransient<SeederExecutor>();
 });
+
 
 var app = builder.Build();
 

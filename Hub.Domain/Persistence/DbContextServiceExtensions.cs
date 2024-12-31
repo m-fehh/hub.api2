@@ -14,7 +14,8 @@ namespace Hub.Domain.Persistence
         {
             services.AddSingleton<IModelCacheKeyFactory, DbSchemaAwareModelCacheKeyFactory>();
             services.AddScoped<IMigrationsSqlGenerator, DbSchemaAwareSqlServerMigrationsSqlGenerator>();
-            services.TryAddSingleton<ITenantProvider, TenantProvider>();
+            //services.TryAddSingleton<ITenantProvider, TenantProvider>();
+
 
             services.AddEntityFrameworkSqlServer().AddDbContext<TContext>((sp, options) => options.UseInternalServiceProvider(sp));
             return services;

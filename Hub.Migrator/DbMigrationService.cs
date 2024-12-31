@@ -1,6 +1,6 @@
-﻿using Hub.Infrastructure.Database.Interfaces;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Hub.Infrastructure.Architecture;
+using Hub.Migrator.Seeders;
 
 public class DbMigrationService : IHostedService
 {
@@ -44,6 +44,8 @@ public class DbMigrationService : IHostedService
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<EntityDbContext>();
                     await dbContext.Database.MigrateAsync();
+
+                    await ExecuteSeedDataAsync(dbContext);
                 }
                 catch (Exception ex)
                 {
@@ -62,5 +64,12 @@ public class DbMigrationService : IHostedService
                 _logger.LogError(message);
             }
         });
+    }
+
+
+    private async Task ExecuteSeedDataAsync(EntityDbContext dbContext)
+    {
+        var seederExecutor = new SeederExecutor(dbContext);
+        await seederExecutor.RunSeedersAsync();
     }
 }

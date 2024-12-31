@@ -4,12 +4,9 @@
     {
         None = 0,
 
-        // Brazil
         CPF = 1,
         CNPJ = 2,
-
-        // Chile
-        ChileanRUT = 3,
+        RUT = 3,
 
         // Colombia
         ColombianCC = 4,
