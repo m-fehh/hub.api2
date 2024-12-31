@@ -1,5 +1,4 @@
-﻿using Hub.Domain.Migrations;
-using Microsoft.EntityFrameworkCore.Design;
+﻿using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hub.Domain.Persistence

@@ -1,15 +1,14 @@
 {
   "profiles": {
-    "http": {
-      "commandName": "Project",
+    "WSL": {
+      "commandName": "WSL2",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_URLS": "https://+:443;http://+:80"
       },
-      "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5022"
+      "distributionName": ""
     },
-    "https": {
+    "Hub.Web": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
@@ -17,15 +16,7 @@
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation",
         "ASPNETCORE_URLS": "http://localhost:4004"
       },
-      "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:4004"
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",

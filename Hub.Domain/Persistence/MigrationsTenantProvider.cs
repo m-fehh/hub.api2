@@ -1,7 +1,7 @@
 ﻿using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.Models;
 
-namespace Hub.Domain.Migrations
+namespace Hub.Domain.Persistence
 {
     public class MigrationsTenantProvider : ITenantProvider
     {

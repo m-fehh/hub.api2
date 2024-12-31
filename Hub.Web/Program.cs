@@ -524,5 +524,10 @@ catch (Exception ex)
 {
     log4net.LogManager.GetLogger("Sch.SystemInfo").Error("SignalRStartup error", ex);
 }
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.Run();
 

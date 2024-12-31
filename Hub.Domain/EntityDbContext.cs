@@ -1,5 +1,4 @@
-﻿using Hub.Domain.Entities;
-using Hub.Infrastructure.Database.Interfaces;
+﻿using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -8,8 +7,8 @@ public class EntityDbContext : DbContext
 {
     private readonly ITenantProvider _tenantProvider;
 
-    public DbSet<Customer> Customers { get; set; } = null!;
-    public DbSet<Teste> Testes { get; set; } = null!;
+    //public DbSet<Customer> Customers { get; set; } = null!;
+    //public DbSet<Teste> Testes { get; set; } = null!;
 
     public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
     {
@@ -42,17 +41,16 @@ public class EntityDbContext : DbContext
 
         base.OnModelCreating(modelBuilder);
 
-        ConfigureCustomer(modelBuilder);
     }
 
-    private static void ConfigureCustomer(ModelBuilder builder)
-    {
-        builder.Entity<Customer>(b =>
-        {
-            var table = b.ToTable("Customers");
+    //private static void ConfigureCustomer(ModelBuilder builder)
+    //{
+    //    builder.Entity<Customer>(b =>
+    //    {
+    //        var table = b.ToTable("Customers");
 
-            table.Property(p => p.CustomerId).ValueGeneratedOnAdd();
-            table.HasKey(p => p.CustomerId).HasName("PK_CustomerId");
-        });
-    }
+    //        table.Property(p => p.CustomerId).ValueGeneratedOnAdd();
+    //        table.HasKey(p => p.CustomerId).HasName("PK_CustomerId");
+    //    });
+    //}
 }

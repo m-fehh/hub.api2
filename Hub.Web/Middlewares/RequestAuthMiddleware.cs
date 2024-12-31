@@ -16,14 +16,16 @@ namespace Hub.Web.Middlewares
         {
             var userAuthenticationToken = string.Empty;
 
-            #region Verifica se Token veio via Header
+            #region VERIFICA TOKEN VIA HEADER
+
             if (request.Headers.ContainsKey("jwt"))
             {
                 userAuthenticationToken = request.Headers["jwt"];
             }
+
             #endregion
 
-            #region Verifica se Token veio via QueryString
+            #region VERIFICA TOKEN VIA QUERYSTRING
 
             if (request.Query.ContainsKey("jwt"))
             {
@@ -65,8 +67,6 @@ namespace Hub.Web.Middlewares
                     }
                 }
             }
-
-
 
             await _next(context);
         }
