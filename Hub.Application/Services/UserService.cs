@@ -444,7 +444,7 @@ namespace Hub.Application.Services
         {
             try
             {
-                var token = Engine.Resolve<LoginService>().Login(new LoginVM { Username = request.Login, Password = request.Password });
+                var token = Engine.Resolve<LoginService>().AuthenticateUser(new LoginVM { Username = request.Login, Password = request.Password });
 
                 var tokenResult = Engine.Resolve<IAccessTokenProvider>().ValidateToken(token);
 

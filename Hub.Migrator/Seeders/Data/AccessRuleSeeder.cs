@@ -111,10 +111,7 @@ namespace Hub.Migrator.Seeders.Data
         // Método para filtrar as regras de acesso por KeyName
         public async Task<AccessRule> GetAccessRulesByKeyNameAsync(string keyName, EntityDbContext dbContext)
         {
-            return await dbContext.AccessRules
-                .Where(x => x.KeyName == keyName)
-                .FirstOrDefaultAsync();
+            return await dbContext.AccessRules.Where(x => x.KeyName == keyName).FirstOrDefaultAsync();
         }
-
     }
 }

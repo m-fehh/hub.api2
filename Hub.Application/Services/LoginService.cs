@@ -1,195 +1,16 @@
-﻿using Hub.Infrastructure.Architecture;
+﻿using Hub.Domain.Entities;
+using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.OAuth.Interfaces;
+using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
 using Hub.Infrastructure.Extensions;
+using System.Security.Claims;
 
 namespace Hub.Application.Services
 {
-    //public class LoginService
-    //{
-    //    private readonly DatabaseConnectionProvider connProvider;
-    //    private readonly IAccessTokenProvider _tokenService;
-
-    //    public LoginService(DatabaseConnectionProvider connProvider)
-    //    {
-    //        this.connProvider = connProvider;
-
-    //        _tokenService = Engine.Resolve<IAccessTokenProvider>();
-    //    }
-
-    //    public string Login(LoginVM model)
-    //    {
-    //        if (string.IsNullOrEmpty(model.Username))
-    //        {
-    //            throw new BusinessException(Engine.Get("UsernameCannotBeNull"));
-    //        }
-
-    //        if (string.IsNullOrEmpty(model.Password))
-    //        {
-    //            throw new BusinessException(Engine.Get("PasswordCannotBeNull"));
-    //        }
-
-    //        return CreateToken(model);
-    //    }
-
-    //    string CreateToken(LoginVM model)
-    //    {
-    //        var connection = connProvider.GetConnection();
-    //        var schema = connProvider.GetSchema();
-
-    //        var password = model.Password.EncodeSHA1();
-
-    //        var user = connection.QueryFirstOrDefault<LoginResponseVM>(
-    //            $@"SELECT 
-    //                p.Id,
-    //                p.Name,
-    //                p.Email,
-    //                p.ProfileId,
-    //                g.Administrator,
-    //                p.DefaultOrgStructureId,
-    //                p.Inactive,
-    //                g.AllowMultipleAccess
-    //            FROM {schema}.PortalUser p 
-    //            JOIN {schema}.ProfileGroup g ON g.Id = p.ProfileId
-    //            WHERE p.Login = @Username AND p.Password = @Password", new { Username = model.Username, Password = password });
-
-    //        if (user == null)
-    //        {
-    //            throw new BusinessException(Engine.Get("InvalidLogin"));
-    //        }
-
-    //        if (user.Inactive)
-    //        {
-    //            throw new BusinessException(Engine.Get("UserInactive"));
-    //        }
-
-    //        var dateOfLastChangePassword = connection.QueryFirstOrDefault<DateTime?>($@"SELECT p.ExpirationUTC FROM {schema}.PortalUserPassHistory p WHERE UserId = @Id AND Password = @Password ORDER BY p.ExpirationUTC DESC", new { Id = user.Id, Password = password });
-
-    //        if (dateOfLastChangePassword.HasValue && dateOfLastChangePassword.Value < DateTime.UtcNow)
-    //        {
-    //            throw new BusinessException(Engine.Get("PasswordExpired"));
-    //        }
-
-    //        connection.Execute(@$"UPDATE {schema}.PortalUser SET TempPassword = NULL, LastAccessDate = @today, LastUpdateUTC = @updateDate WHERE Id = @Id",
-    //            new
-    //            {
-    //                today = DateTime.Now,
-    //                updateDate = DateTime.UtcNow,
-    //                Id = user.Id
-    //            });
-
-    //        return CreateToken(user);
-    //    }
-
-    //    string CreateToken(LoginResponseVM user)
-    //    {
-    //        var connection = connProvider.GetConnection();
-    //        var schema = connProvider.GetSchema();
-
-    //        var redisService = Engine.Resolve<IRedisService>();
-
-    //        var cacheKey = $"UpdatedUserAccess{user.Id}";
-
-    //        var userToRevoke = redisService.Get(cacheKey).ToString();
-
-    //        if (!string.IsNullOrWhiteSpace(userToRevoke))
-    //        {
-    //            redisService.Delete(cacheKey);
-    //        }
-
-    //        var list = connection.Query<long>($@"SELECT p.StructureId FROM {schema}.PortalUser_OrgStructure p WHERE p.UserId = @Id", user);
-
-    //        redisService.Set($"UserOrgList{user.Id}", JsonConvert.SerializeObject(list), TimeSpan.FromDays(7));
-
-    //        double tokenExpirationTimeInMinutes = double.TryParse(Engine.AppSettings["Hub-auth-token-expiration-time"], out var tokenExpirationTime) ? tokenExpirationTime : 180;
-
-    //        var token = _tokenService.GenerateToken(new List<Claim>
-    //                {
-    //                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-    //                    new Claim(ClaimTypes.Name, user.Name),
-    //                    new Claim(ClaimTypes.Email, user.Email),
-    //                    new Claim("admin", user.Administrator.ToString()),
-    //                    new Claim("profileId", user.ProfileId.ToString()),
-    //                    new Claim("defaultOrgStructureId", user.DefaultOrgStructureId?.ToString() ?? ""),
-    //                    new Claim("allowMultipleAccess", user.AllowMultipleAccess.ToString()),
-    //                }, expiryInMinutes: tokenExpirationTimeInMinutes);
-
-    //        return token;
-    //    }
-
-    //    public string RefreshToken(string token)
-    //    {
-    //        var loginData = ValidateToken(token);
-
-    //        return CreateToken(loginData.Id.Value);
-    //    }
-
-    //    string CreateToken(long userId)
-    //    {
-    //        var connection = connProvider.GetConnection();
-    //        var schema = connProvider.GetSchema();
-
-    //        var user = connection.QueryFirstOrDefault<LoginResponseVM>(
-    //            $@"SELECT 
-    //                p.Id,
-    //                p.Name,
-    //                p.Email,
-    //                p.ProfileId,
-    //                g.Administrator,
-    //                p.DefaultOrgStructureId,
-    //                p.Inactive,
-    //                g.AllowMultipleAccess
-    //            FROM {schema}.PortalUser p 
-    //            JOIN {schema}.ProfileGroup g ON g.Id = p.ProfileId
-    //            WHERE p.Id = @Id", new { Id = userId });
-
-    //        if (user == null)
-    //        {
-    //            throw new BusinessException(Engine.Get("InvalidLogin"));
-    //        }
-
-    //        return CreateToken(user);
-    //    }
-
-    //    public LoginResponseVM ValidateToken(string token)
-    //    {
-    //        ClaimsPrincipal principals;
-
-    //        try
-    //        {
-    //            var result = _tokenService.ValidateToken(token);
-
-    //            _tokenService.ValidateTokenStatus(result);
-
-    //            principals = result.Principal;
-    //        }
-    //        catch (ArgumentException ex)
-    //        {
-    //            throw new BusinessException(Engine.Get("ValidationTokenIsInvalid"));
-    //        }
-    //        catch (SecurityTokenExpiredException stex)
-    //        {
-    //            throw new BusinessException(Engine.Get("ValidationTokenIsExpired"));
-    //        }
-
-    //        var defaultOrgStructureId = principals.Claims.FirstOrDefault(c => c.Type == "defaultOrgStructureId")?.Value;
-
-    //        var response = new LoginResponseVM
-    //        {
-    //            Id = long.Parse(principals.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value),
-    //            Name = principals.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value,
-    //            Email = principals.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
-    //            ProfileId = long.Parse(principals.Claims.First(c => c.Type == "profileId" || c.Type == "userProfileId").Value),
-    //            Administrator = bool.Parse(principals.Claims.FirstOrDefault(c => c.Type == "admin")?.Value ?? "false"),
-    //            DefaultOrgStructureId = !string.IsNullOrEmpty(defaultOrgStructureId) ? long.Parse(defaultOrgStructureId) : null
-    //        };
-
-    //        return response;
-    //    }
-    //}
-
     public class LoginService
     {
-        public string Login(LoginVM model)
+        public string AuthenticateUser(LoginVM model)
         {
             if (string.IsNullOrEmpty(model.Username))
             {
@@ -201,14 +22,54 @@ namespace Hub.Application.Services
                 throw new BusinessException(Engine.Get("PasswordCannotBeNull"));
             }
 
-            return CreateToken(model);
+            return GenerateUserToken(model);
 
         }
 
-        string CreateToken(LoginVM model)
+        string GenerateUserToken(LoginVM model)
         {
             var password = model.Password.EncodeSHA1();
-            return "";
+            var user = Engine.Resolve<IRepository<PortalUser>>().Table.FirstOrDefault(x => x.Login == model.Username && x.Password == password);
+
+            if (user == null)
+            {
+                throw new BusinessException(Engine.Get("InvalidLogin"));
+            }
+
+            if (user.Inactive)
+            {
+                throw new BusinessException(Engine.Get("UserInactive"));
+            }
+
+
+            user.LastAccessDate = DateTime.Now;
+            Engine.Resolve<IRepository<PortalUser>>().Update(user);
+
+            return CreateTokenForUser(new LoginResponseVM
+            {
+                Id = user.Id,
+                Name = user.Person.Name,
+                Email = user.Person.Email,
+                ProfileId = user.ProfileId,
+                Administrator = user.Profile.Administrator,
+                Inactive = user.Inactive
+            });
+        }
+
+        string CreateTokenForUser(LoginResponseVM user)
+        {
+            double tokenExpirationTimeInMinutes = double.TryParse(Engine.AppSettings["auth-token-expiration-time"], out var tokenExpirationTime) ? tokenExpirationTime : 180;
+
+            var token = Engine.Resolve<IAccessTokenProvider>().GenerateToken(new List<Claim>
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                        new Claim(ClaimTypes.Name, user.Name),
+                        new Claim(ClaimTypes.Email, user.Email),
+                        new Claim("admin", user.Administrator.ToString()),
+                        new Claim("profileId", user.ProfileId.ToString())
+                    }, expiryInMinutes: tokenExpirationTimeInMinutes);
+
+            return token;
         }
     }
 
@@ -218,4 +79,15 @@ namespace Hub.Application.Services
         public string Password { get; set; }
     }
 
+    public class LoginResponseVM
+    {
+        public long? Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public long? ProfileId { get; set; }
+        public bool Administrator { get; set; }
+        public bool Inactive { get; set; }
+        public long? DefaultOrgStructureId { get; set; }
+        public bool AllowMultipleAccess { get; set; }
+    }
 }
