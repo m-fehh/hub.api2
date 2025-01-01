@@ -40,6 +40,7 @@ using Hub.Infrastructure.Architecture.Resources;
 using Hub.Infrastructure.Web.ModelBinder;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 using Hub.Infrastructure.Database.Entity;
+using Hub.Infrastructure.Autofac;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -70,6 +71,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
 {
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
+        nameProvider: new EntityNameProvider(),
         tasks:
         new List<IStartupTask>()
         {

@@ -10,9 +10,9 @@ namespace Hub.Infrastructure.Architecture
         /// <param name="actionId">ID único da ação, serve para fazer a gestão se a tarefa está habilitada no ambiente</param>
         /// <param name="action">Ação a ser executada para cada tenant da aplicação</param>
         /// <param name="logAction">Ação de log recebe os parâmetros tipo de log e mensagem.</param>
-        /// <param name="forceTenantAndCulture">Altera a cultura da thread para a cultura gravada na tabela de gestão dos tenants (adm.Client)</param>
+        /// <param name="applyTenantSettings">Altera a cultura da thread para a cultura gravada na tabela de gestão dos tenants (adm.Tenants)</param>
         /// <param name="throwOnError">Define se irá estourar o erro ou apenas disparar o log</param>
-        public void LoopTenants(string actionId, Action action, Action<string, string> logAction = null, bool forceTenantAndCulture = false, bool throwOnError = false)
+        public void LoopTenants(string actionId, Action action, Action<string, string> logAction = null, bool applyTenantSettings = false, bool throwOnError = false)
         {
             //TODO: reutilizar código entre as LoopTenants
             var mapIds = new[] { "cliente", "default" };
@@ -21,7 +21,7 @@ namespace Hub.Infrastructure.Architecture
 
             foreach (var tenant in mapeamentoBase.ConfigurationTenants.Where(t => !mapIds.Contains(t.Subdomain)))
             {
-                using (Engine.BeginLifetimeScope(tenant.Subdomain, forceTenantAndCulture))
+                using (Engine.BeginLifetimeScope(tenant.Subdomain, applyTenantSettings))
                 {
                     try
                     {

@@ -243,11 +243,11 @@ namespace Hub.Infrastructure.Architecture
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Initialize(EngineInitializationParameters engineInitializationParameters)
         {
-            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, tasks: engineInitializationParameters.StartupTasks, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, csb: engineInitializationParameters.ConnectionStringBase, containerBuilder: engineInitializationParameters.ContainerBuilder);
+            Initialize(executingAssembly: engineInitializationParameters.ExecutingAssembly, nameProvider: engineInitializationParameters.NameProvider, tasks: engineInitializationParameters.StartupTasks, dependencyRegistrars: engineInitializationParameters.DependencyRegistrators, csb: engineInitializationParameters.ConnectionStringBase, containerBuilder: engineInitializationParameters.ContainerBuilder);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void Initialize(Assembly executingAssembly, IList<IStartupTask> tasks = null, IList<IDependencyConfiguration> dependencyRegistrars = null, ConnectionStringBaseVM csb = null, ContainerBuilder containerBuilder = null)
+        public static void Initialize(Assembly executingAssembly, IEntityNameProvider nameProvider = null, IList<IStartupTask> tasks = null, IList<IDependencyConfiguration> dependencyRegistrars = null, ConnectionStringBaseVM csb = null, ContainerBuilder containerBuilder = null)
         {
             ExecutingAssembly = executingAssembly;
 
@@ -256,6 +256,7 @@ namespace Hub.Infrastructure.Architecture
                 TypeNameHandling = TypeNameHandling.Auto
             };
 
+            Singleton<IEntityNameProvider>.Instance = nameProvider;
             Singleton<LoopTenantManager>.Instance = new LoopTenantManager();
 
             if (dependencyRegistrars == null)
@@ -319,14 +320,20 @@ namespace Hub.Infrastructure.Architecture
         {
             if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
             {
-                CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
-                currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
+                string tenantName = null;
 
                 if (preserveTenantScope)
                 {
-                    string tenantName = null;
-                    //string tenantName = Singleton<INhNameProvider>.Instance.TenantName();
-                    TenantLifeTimeScope.Start(tenantName);
+                    tenantName = Singleton<IEntityNameProvider>.Instance.TenantName();
+                }
+
+                Engine.CurrentScope.Value = Engine.ContainerManager.Container.BeginLifetimeScope();
+
+                currentScopeDisposer.Value = new LifetimeScopeDispose(Engine.CurrentScope.Value);
+
+                if (preserveTenantScope)
+                {
+                    Engine.Resolve<TenantLifeTimeScope>().Start(tenantName);
                 }
 
                 return currentScopeDisposer.Value;
@@ -345,13 +352,15 @@ namespace Hub.Infrastructure.Architecture
         {
             if (currentScopeDisposer.Value == null || currentScopeDisposer.Value.IsDisposed)
             {
-                CurrentScope.Value = ContainerManager.Container.BeginLifetimeScope();
+                Engine.CurrentScope.Value = Engine.ContainerManager.Container.BeginLifetimeScope();
 
-                currentScopeDisposer.Value = new LifetimeScopeDispose(CurrentScope.Value);
+                currentScopeDisposer.Value = new LifetimeScopeDispose(Engine.CurrentScope.Value);
+
+                var tenantLifeTimeScope = Engine.Resolve<TenantLifeTimeScope>();
 
                 if (applyTenantSettings)
                 {
-                    var info = Resolve<ITenantManager>().GetInfo();
+                    var info = Engine.Resolve<ITenantManager>().GetInfo();
                     if (info != null)
                     {
                         if (info.DefaultCulture != null)
@@ -361,16 +370,16 @@ namespace Hub.Infrastructure.Architecture
                             CultureInfo.CurrentUICulture = ci;
                         }
 
-                        TenantLifeTimeScope.Start(info.Subdomain);
+                        tenantLifeTimeScope.Start(info.Subdomain);
                     }
                     else
                     {
-                        TenantLifeTimeScope.Start(tenantName);
+                        tenantLifeTimeScope.Start(tenantName);
                     }
                 }
                 else
                 {
-                    TenantLifeTimeScope.Start(tenantName);
+                    tenantLifeTimeScope.Start(tenantName);
                 }
 
                 //se não houver culture definida, define a padrão (situação ocorreu no jobs em ambientes linux/docker)

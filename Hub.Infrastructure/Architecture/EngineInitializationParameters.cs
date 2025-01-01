@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 using Hub.Infrastructure.Database;
+using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
 using System.Reflection;
 
@@ -9,6 +10,8 @@ namespace Hub.Infrastructure.Architecture
     public class EngineInitializationParameters
     {
         public Assembly ExecutingAssembly { get; set; }
+
+        public IEntityNameProvider NameProvider { get; set; }
 
         public IList<IStartupTask> StartupTasks { get; set; } = new List<IStartupTask>();
 

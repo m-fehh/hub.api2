@@ -1,8 +1,6 @@
 ﻿using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.Models;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Hub.Infrastructure.Database.MultiTenant
 {
@@ -10,7 +8,7 @@ namespace Hub.Infrastructure.Database.MultiTenant
     {
         private readonly Dictionary<string, AdmClient> _tenantConfigurations;
 
-        public string? CurrentTenant => TenantLifeTimeScope.CurrentTenant;
+        public string? CurrentTenant => Engine.Resolve<TenantLifeTimeScope>().CurrentTenantName;
 
         public TenantProvider()
         {

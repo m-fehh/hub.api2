@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hub.Domain.Migrations
 {
     [DbContext(typeof(EntityDbContext))]
-    [Migration("20241231172250_Initial_Hub")]
+    [Migration("20250101182517_Initial_Hub")]
     partial class Initial_Hub
     {
         /// <inheritdoc />
@@ -42,11 +42,10 @@ namespace Hub.Domain.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<long>("ParentId")
+                    b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Tree")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -178,6 +177,9 @@ namespace Hub.Domain.Migrations
                     b.Property<DateTime?>("LastAccessDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("LastPasswordRecoverRequestDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("LastUpdateUTC")
                         .HasColumnType("datetime2");
 
@@ -208,6 +210,85 @@ namespace Hub.Domain.Migrations
                     b.ToTable("PortalUser");
                 });
 
+            modelBuilder.Entity("Hub.Domain.Entities.PortalUserFingerprint", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("BrowserInfo")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("BrowserName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool?>("CookieEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("CreationUTC")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("LastUpdateUTC")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("Lat")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Lng")
+                        .HasColumnType("float");
+
+                    b.Property<string>("OS")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PortalUserFingerprints");
+                });
+
+            modelBuilder.Entity("Hub.Domain.Entities.PortalUserPassHistory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreationUTC")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long>("PortalUserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PortalUserId");
+
+                    b.ToTable("PortalUserPassHistory");
+                });
+
             modelBuilder.Entity("Hub.Domain.Entities.ProfileGroup", b =>
                 {
                     b.Property<long>("Id")
@@ -217,6 +298,9 @@ namespace Hub.Domain.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<bool>("Administrator")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowMultipleAccess")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -249,6 +333,28 @@ namespace Hub.Domain.Migrations
                         .IsRequired();
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Hub.Domain.Entities.PortalUserFingerprint", b =>
+                {
+                    b.HasOne("Hub.Domain.Entities.PortalUser", "PortalUser")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PortalUser");
+                });
+
+            modelBuilder.Entity("Hub.Domain.Entities.PortalUserPassHistory", b =>
+                {
+                    b.HasOne("Hub.Domain.Entities.PortalUser", "PortalUser")
+                        .WithMany()
+                        .HasForeignKey("PortalUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PortalUser");
                 });
 #pragma warning restore 612, 618
         }

@@ -26,6 +26,9 @@ namespace Hub.Application.Configurations
             builder.RegisterType<PortalUserPassHistoryService>().As<ICrudService<PortalUserPassHistory>>().AsSelf();
             builder.RegisterType<PortalUserPassHistoryService>().AsSelf();
 
+            builder.RegisterType<AccessRuleService>().As<ICrudService<AccessRule>>();
+            builder.RegisterType<AccessRuleService>().AsSelf();
+
             builder.RegisterType<UserProfileControlAccessService>().As<IUserProfileControlAccessService>();
             builder.RegisterType<UserProfileControlAccessService>().AsSelf();
 

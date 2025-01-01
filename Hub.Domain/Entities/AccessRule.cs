@@ -11,7 +11,7 @@ namespace Hub.Domain.Entities
         [Key]
         public override long Id { get; set; }
 
-        public virtual long ParentId { get; set; }
+        public virtual long? ParentId { get; set; }
 
         [NotMapped]
         [ForeignKey(nameof(ParentId))]
@@ -27,6 +27,6 @@ namespace Hub.Domain.Entities
         public virtual string Description { get; set; }
 
         [IgnoreLog]
-        public virtual string Tree { get; set; }
+        public virtual string? Tree { get; set; }
     }
 }

@@ -17,6 +17,7 @@ using Hub.Infrastructure.Architecture.Logger;
 using Hub.Infrastructure.Architecture.Logger.Interfaces;
 using Hub.Infrastructure.Architecture.Localization.Interfaces;
 using Hub.Infrastructure.Architecture.Localization;
+using Hub.Infrastructure.Autofac;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -55,6 +56,8 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<RedLockManager>().As<ILockManager>().SingleInstance();
 
             builder.RegisterType<DefaultLocalizationProvider>().As<ILocalizationProvider>().AsSelf();
+
+            builder.RegisterType<EntityNameProvider>().As<IEntityNameProvider>().AsSelf();
         }
 
         void ActivingRepository(IActivatingEventArgs<object> e)

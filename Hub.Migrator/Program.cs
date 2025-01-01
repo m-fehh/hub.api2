@@ -7,16 +7,16 @@ using Hub.Domain.Persistence;
 using Hub.Infrastructure.Extensions;
 using Hub.Infrastructure.Architecture;
 using Hub.Migrator.Seeders;
+using Hub.Application.Services;
 
-var builder = Host.CreateDefaultBuilder(args)
-    .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+var builder = Host.CreateDefaultBuilder(args).UseServiceProviderFactory(new AutofacServiceProviderFactory())
     .ConfigureAppConfiguration((hostContext, configBuilder) =>
     {
-        // Define o diretório base para configurar os arquivos de configuração compartilhados
-        configBuilder.SetBasePath(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location));
+        var basePath = Directory.GetCurrentDirectory(); 
+        Console.WriteLine($"Config Base Path: {basePath}"); 
+        configBuilder.SetBasePath(basePath);
         configBuilder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-        // Define as variáveis de ambiente com base nas configurações que começam com "Settings:"
         foreach (var item in configBuilder.Build().AsEnumerable().Where(c => c.Key.StartsWith("Settings:")))
         {
             Environment.SetEnvironmentVariable(item.Key.Replace("Settings:", ""), item.Value);
@@ -43,7 +43,7 @@ builder.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 builder.ConfigureServices((hostContext, services) =>
 {
     services.AddTenantSupport();
-    services.AddEntityFrameworkSqlServer<EntityDbContext>(); 
+    services.AddEntityFrameworkSqlServer<EntityDbContext>();
     services.AddHostedService<DbMigrationService>();
 
     // Registrar os seeders automaticamente
