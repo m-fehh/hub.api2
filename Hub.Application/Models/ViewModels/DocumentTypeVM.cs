@@ -1,7 +1,7 @@
 ﻿using Hub.Infrastructure.Internacionalization.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Hub.Application.ViewModels
+namespace Hub.Application.Models.ViewModels
 {
     public class DocumentTypeVM
     {
@@ -16,8 +16,6 @@ namespace Hub.Application.ViewModels
         [Display(Name = "Mask")]
         public virtual string Mask { get; set; }
 
-        [Display(Name = "CodeForTaxInvoice")]
-        public virtual string CodeForTaxInvoice { get; set; }
 
         [Display(Name = "MinLength")]
         public virtual long? MinLength { get; set; }

@@ -1,4 +1,5 @@
-﻿using Hub.Infrastructure.Architecture;
+﻿using Hub.Application.Services;
+using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 
 namespace Hub.Web.Middlewares
@@ -59,7 +60,7 @@ namespace Hub.Web.Middlewares
                 {
                     try
                     {
-                        //Engine.Resolve<UserService>().SetCurrentUser(authToken);
+                        Engine.Resolve<UserService>().SetCurrentUser(authToken);
                     }
                     catch (Exception ex)
                     {

@@ -29,7 +29,7 @@ namespace Hub.Domain.Entities
         [StringLength(100)]
         public virtual string Document { get; set; }
 
-        public long DocumentTypeId { get; set; }
+        public virtual long DocumentTypeId { get; set; }
 
 
         [ForeignKey(nameof(DocumentTypeId))]

@@ -25,6 +25,8 @@ public class EntityDbContext : DbContext
 
     public DbSet<PortalUser> PortalUsers { get; set; } = null!; 
 
+    public DbSet<PortalUserPassHistory> PortalUserPassHistories { get; set; } = null!; 
+
     public DbSet<Person> Persons { get; set; } = null!; 
 
     #endregion

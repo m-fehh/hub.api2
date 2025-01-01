@@ -20,5 +20,8 @@ namespace Hub.Domain.Entities
 
         [Required]
         public virtual bool Administrator { get; set; }
+
+        [Required]
+        public virtual bool AllowMultipleAccess { get; set; }
     }
 }

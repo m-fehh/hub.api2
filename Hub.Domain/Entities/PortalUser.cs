@@ -20,12 +20,12 @@ namespace Hub.Domain.Entities
         [StringLength(50)]
         public virtual string Password { get; set; }
 
-        public long PersonId { get; set; }
+        public virtual long PersonId { get; set; }
 
         [ForeignKey(nameof(PersonId))]
         public virtual Person Person { get; set; }
 
-        public long ProfileId { get; set; }
+        public virtual long ProfileId { get; set; }
 
         [NotMapped]
         [ForeignKey(nameof(ProfileId))]
@@ -48,6 +48,8 @@ namespace Hub.Domain.Entities
         public virtual string IpAddress { get; set; }
 
         public virtual DateTime? LastAccessDate { get; set; }
+
+        public virtual DateTime? LastPasswordRecoverRequestDate { get; set; }
 
         [IgnoreLog]
         public virtual DateTime? CreationUTC { get; set; }

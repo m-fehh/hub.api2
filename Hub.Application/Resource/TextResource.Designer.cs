@@ -22,7 +22,7 @@ namespace Hub.Application.Resource {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class TextResource {
+    internal class TextResource {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -57,6 +57,195 @@ namespace Hub.Application.Resource {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Abreviatura.
+        /// </summary>
+        internal static string Abbreviation {
+            get {
+                return ResourceManager.GetString("Abbreviation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to O valor informado para o campo {0} já está cadastrado..
+        /// </summary>
+        internal static string DefaultAlreadyRegistered {
+            get {
+                return ResourceManager.GetString("DefaultAlreadyRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to O campo {0} é obrigatório..
+        /// </summary>
+        internal static string DefaultRequiredMessage {
+            get {
+                return ResourceManager.GetString("DefaultRequiredMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tipo de documento.
+        /// </summary>
+        internal static string DocumentType {
+            get {
+                return ResourceManager.GetString("DocumentType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Um outro login com o mesmo usuário foi realizado em outro navegador..
+        /// </summary>
+        internal static string ErrorAlreadyLogin {
+            get {
+                return ResourceManager.GetString("ErrorAlreadyLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Não é possível cadastrar uma senha com menos de 6 caracteres..
+        /// </summary>
+        internal static string ErrorPasswordLength {
+            get {
+                return ResourceManager.GetString("ErrorPasswordLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Inativo.
+        /// </summary>
+        internal static string Inactive {
+            get {
+                return ResourceManager.GetString("Inactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to O usuário informado encontra-se inativo no sistema..
+        /// </summary>
+        internal static string InactiveUser {
+            get {
+                return ResourceManager.GetString("InactiveUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login.
+        /// </summary>
+        internal static string Login {
+            get {
+                return ResourceManager.GetString("Login", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Máscara.
+        /// </summary>
+        internal static string Mask {
+            get {
+                return ResourceManager.GetString("Mask", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tamanho máximo.
+        /// </summary>
+        internal static string MaxLength {
+            get {
+                return ResourceManager.GetString("MaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tamanho mínimo.
+        /// </summary>
+        internal static string MinLength {
+            get {
+                return ResourceManager.GetString("MinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nome.
+        /// </summary>
+        internal static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Não.
+        /// </summary>
+        internal static string No {
+            get {
+                return ResourceManager.GetString("No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apenas um administrador por manipular um usuário com perfil de administrador..
+        /// </summary>
+        internal static string OnlyAdminCanChangeAdminUser {
+            get {
+                return ResourceManager.GetString("OnlyAdminCanChangeAdminUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Insira uma senha que ainda não foi utilizada..
+        /// </summary>
+        internal static string PasswordAlreadyUsed {
+            get {
+                return ResourceManager.GetString("PasswordAlreadyUsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A senha é obrigatória. Por favor, insira uma senha..
+        /// </summary>
+        internal static string PasswordCannotBeNull {
+            get {
+                return ResourceManager.GetString("PasswordCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Validação para documento especial.
+        /// </summary>
+        internal static string SpecialDocumentValidation {
+            get {
+                return ResourceManager.GetString("SpecialDocumentValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Por favor, informe o nome de usuário..
+        /// </summary>
+        internal static string UsernameCannotBeNull {
+            get {
+                return ResourceManager.GetString("UsernameCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to O usuário informado é inválido. Por favor, verifique os dados e tente novamente..
+        /// </summary>
+        internal static string UsernameInvalid {
+            get {
+                return ResourceManager.GetString("UsernameInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sim.
+        /// </summary>
+        internal static string Yes {
+            get {
+                return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
     }
