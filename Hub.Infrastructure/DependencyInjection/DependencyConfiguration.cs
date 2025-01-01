@@ -18,6 +18,8 @@ using Hub.Infrastructure.Architecture.Logger.Interfaces;
 using Hub.Infrastructure.Architecture.Localization.Interfaces;
 using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Autofac;
+using FMK.Core.Nominator;
+using Hub.Infrastructure.Nominator.Interfaces;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -58,6 +60,8 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<DefaultLocalizationProvider>().As<ILocalizationProvider>().AsSelf();
 
             builder.RegisterType<EntityNameProvider>().As<IEntityNameProvider>().AsSelf();
+
+            builder.RegisterType<NominatorManager>().As<INominatorManager>().SingleInstance();
         }
 
         void ActivingRepository(IActivatingEventArgs<object> e)

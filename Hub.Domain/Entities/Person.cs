@@ -21,11 +21,6 @@ namespace Hub.Domain.Entities
         [StringLength(150)]
         public virtual string Name { get; set; }
 
-        [Required]
-        [StringLength(150)]
-        [EmailAddress]
-        public virtual string Email { get; set; }
-
         [StringLength(100)]
         public virtual string Document { get; set; }
 

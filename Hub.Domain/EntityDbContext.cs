@@ -1,4 +1,5 @@
 ﻿using Hub.Domain.Entities;
+using Hub.Domain.Entities.Logs;
 using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -29,10 +30,17 @@ public class EntityDbContext : DbContext
 
     public DbSet<PortalUserFingerprint> PortalUserFingerprints { get; set; } = null!; 
 
-    public DbSet<Person> Persons { get; set; } = null!; 
+    public DbSet<Person> Persons { get; set; } = null!;
 
     #endregion
 
+    #region LOGS
+
+    public DbSet<Log> Logs { get; set; } = null!;
+
+    public DbSet<LogField> LogFields { get; set; } = null!;
+
+    #endregion
 
 
     public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)

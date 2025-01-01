@@ -17,6 +17,8 @@ namespace Hub.Infrastructure.Database.Interfaces
 
         void Delete(T entity);
 
+        void Refresh(T entity);
+
         T GetById(long id);
 
         T StatelessGetById(long id);

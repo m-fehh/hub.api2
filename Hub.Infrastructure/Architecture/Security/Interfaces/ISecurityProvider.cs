@@ -12,7 +12,7 @@ namespace Hub.Infrastructure.Architecture.Security.Interfaces
         //bool Authorize(string role);
 
         //List<string> GetAuthorizedRoles(List<string> roles);
-        //IUser GetCurrent();
+        IUserAccount GetCurrent();
 
         //void SetCurrentUser(IUser user);
 

@@ -10,7 +10,7 @@ namespace Hub.Infrastructure.Architecture.Logger.Interfaces
     {
         DateTime CreateDate { get; set; }
 
-        //IUser CreateUser { get; set; }
+        IUserAccount CreateUser { get; set; }
 
         long ObjectId { get; set; }
 

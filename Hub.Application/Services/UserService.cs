@@ -21,6 +21,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Hub.Application.Models.Helpers;
 using Hub.Infrastructure.Architecture.OAuth;
 using Hub.Infrastructure.Database.Models;
+using System.Collections.Generic;
 
 namespace Hub.Application.Services
 {
@@ -149,6 +150,63 @@ namespace Hub.Application.Services
         public void SetCurrentUser(string token)
         {
             CurrentUserContext.Value.AuthToken = token;
+        }
+
+        public IUserAccount GetCurrent()
+        {
+            try
+            {
+                //if (Singleton<TestManager>.Instance?.RunningInTestScope ?? false)
+                //{
+                //    if (Singleton<CoreTestManager>.Instance.CurrentUser != null)
+                //    {
+                //        return GetById(Singleton<CoreTestManager>.Instance.CurrentUser.Value);
+                //    }
+                //    else
+                //    {
+                //        return null;
+                //    }
+                //}
+
+                if (CurrentUserContext.Value?.CurrentUserId != null)
+                {
+                    var userId = CurrentUserContext.Value?.CurrentUserId;
+                    return GetById(userId.Value);
+                }
+                else
+                {
+                    if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
+
+                    var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+                    if (!string.IsNullOrEmpty(authCookie))
+                    {
+                        var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                        accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                        var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERID);
+
+                        if (!string.IsNullOrWhiteSpace(claim?.Value))
+                        {
+                            var userId = long.Parse(claim.Value);
+
+                            return GetById(userId);
+                        }
+                    }
+
+                    if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
+                    {
+                        return GetById(1);
+                    }
+
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public long? GetCurrentId()
@@ -377,7 +435,7 @@ namespace Hub.Application.Services
                     if (currentUser == null && string.IsNullOrWhiteSpace(userEmailClaim) == false)
                     {
                         var userEmail = long.Parse(userEmailClaim);
-                        currentUser = portalUserTable.FirstOrDefault(w => w.Person.Email.Equals(userEmail) && w.Inactive == false);
+                        currentUser = portalUserTable.FirstOrDefault(w => w.Email.Equals(userEmail) && w.Inactive == false);
                     }
 
                     if (currentUser == null && string.IsNullOrWhiteSpace(userDocClaim) == false)

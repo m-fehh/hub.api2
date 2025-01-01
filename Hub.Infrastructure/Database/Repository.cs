@@ -124,6 +124,11 @@ namespace Hub.Infrastructure.Database
             Log(entity, ELogAction.Deletion);
         }
 
+        public void Refresh(T entity)
+        {
+            _context.Entry(entity).Reload();
+        }
+
         public void Delete(long id)
         {
             var entity = _context.Set<T>().Find(id);
