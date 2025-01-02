@@ -48,8 +48,8 @@ namespace Hub.Application.Services
             return CreateTokenForUser(new LoginResponseVM
             {
                 Id = user.Id,
-                Name = user.Person.Name,
-                Email = user.Person.Email,
+                Name = user.Name,
+                Email = user.Email,
                 ProfileId = user.ProfileId,
                 Administrator = user.Profile.Administrator,
                 Inactive = user.Inactive

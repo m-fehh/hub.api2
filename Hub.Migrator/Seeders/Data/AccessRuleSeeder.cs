@@ -5,6 +5,8 @@ namespace Hub.Migrator.Seeders.Data
 {
     public class AccessRuleSeeder : ISeeder
     {
+        public int Order => 2;
+
         public async Task SeedAsync(EntityDbContext dbContext)
         {
             // Inicial
@@ -13,11 +15,20 @@ namespace Hub.Migrator.Seeders.Data
             // User
             await CreateAccessRulesAsync("US", "User", false, null, dbContext);
 
+            // System
+            await CreateAccessRulesAsync("SYS", "System", false, null, dbContext);
+
             // PortalUser
-            await CreateAccessRulesAsync("CB_User", "PortalUser", true, "US", dbContext);
+            await CreateAccessRulesAsync("US_User", "PortalUser", true, "US", dbContext);
 
             // ProfileGroup
             await CreateAccessRulesAsync("CB_ProfileGroup", "ProfileGroup", true, "US", dbContext);
+
+            // DocumentType
+            await CreateAccessRulesAsync("CB_DocumentType", "DocumentType", true, "CB", dbContext);
+
+            // Logs
+            await CreateAccessRulesAsync("SYS_Logs", "Logs", true, "SYS", dbContext);
         }
 
         private async Task CreateAccessRulesAsync(string baseKeyName, string description, bool addOperations, string parentKey, EntityDbContext dbContext)

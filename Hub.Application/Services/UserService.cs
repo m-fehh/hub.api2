@@ -156,18 +156,6 @@ namespace Hub.Application.Services
         {
             try
             {
-                //if (Singleton<TestManager>.Instance?.RunningInTestScope ?? false)
-                //{
-                //    if (Singleton<CoreTestManager>.Instance.CurrentUser != null)
-                //    {
-                //        return GetById(Singleton<CoreTestManager>.Instance.CurrentUser.Value);
-                //    }
-                //    else
-                //    {
-                //        return null;
-                //    }
-                //}
-
                 if (CurrentUserContext.Value?.CurrentUserId != null)
                 {
                     var userId = CurrentUserContext.Value?.CurrentUserId;

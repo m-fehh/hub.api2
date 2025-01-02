@@ -3,5 +3,7 @@
     public interface ISeeder
     {
         Task SeedAsync(EntityDbContext dbContext);
+
+        int Order { get; }
     }
 }

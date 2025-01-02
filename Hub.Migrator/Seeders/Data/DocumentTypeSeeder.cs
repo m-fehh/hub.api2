@@ -6,6 +6,8 @@ namespace Hub.Migrator.Seeders.Data
 {
     public class DocumentTypeSeeder : ISeeder
     {
+        public int Order => 3;
+
         public async Task SeedAsync(EntityDbContext dbContext)
         {
             var documentTypes = new List<DocumentType>

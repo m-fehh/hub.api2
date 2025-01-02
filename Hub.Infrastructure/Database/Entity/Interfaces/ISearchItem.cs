@@ -19,7 +19,7 @@
     }
 
     /// <summary>
-    /// Todo resultado de um buscador (item gráfico normalmente utilizado para foreign keys) deverá ser convertido para esse objeto
+    /// Todos resultados de um buscador (item gráfico normalmente utilizado para foreign keys) deverá ser convertido para esse objeto
     /// </summary>
     public class SearchResult : ISearchResult
     {

@@ -13,15 +13,11 @@ namespace Hub.Migrator.Seeders
 
         public async Task RunSeedersAsync()
         {
-            // Obtém todas as classes do assembly atual
-            var seederTypes = Assembly.GetExecutingAssembly()
-                                      .GetTypes()
-                                      .Where(t => typeof(ISeeder).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+            var seederTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => typeof(ISeeder).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract).Select(t => (ISeeder)Activator.CreateInstance(t)) .OrderBy(seeder => seeder.Order).ToList();
 
-            foreach (var seederType in seederTypes)
+            foreach (var seeder in seederTypes)
             {
-                var seederInstance = (ISeeder)Activator.CreateInstance(seederType);
-                await seederInstance.SeedAsync(_dbContext);
+                await seeder.SeedAsync(_dbContext);
             }
         }
     }

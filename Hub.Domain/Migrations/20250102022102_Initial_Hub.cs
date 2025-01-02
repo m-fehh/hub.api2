@@ -47,6 +47,44 @@ namespace Hub.Domain.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Log",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreateUserId = table.Column<long>(type: "bigint", nullable: true),
+                    ObjectId = table.Column<long>(type: "bigint", nullable: false),
+                    ObjectName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LogType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    IpAddress = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    LogVersion = table.Column<int>(type: "int", nullable: true),
+                    FatherId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Log", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LogField",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LogId = table.Column<long>(type: "bigint", nullable: true),
+                    PropertyName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    OldValue = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    NewValue = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LogField", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProfileGroup",
                 columns: table => new
                 {
@@ -68,7 +106,6 @@ namespace Hub.Domain.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Document = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     DocumentTypeId = table.Column<long>(type: "bigint", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -94,15 +131,17 @@ namespace Hub.Domain.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Login = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    PersonId = table.Column<long>(type: "bigint", nullable: false),
+                    PersonId = table.Column<long>(type: "bigint", nullable: true),
                     ProfileId = table.Column<long>(type: "bigint", nullable: false),
                     TempPassword = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     ChangingPass = table.Column<bool>(type: "bit", nullable: false),
                     Inactive = table.Column<bool>(type: "bit", nullable: false),
-                    Keyword = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    IpAddress = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Keyword = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     LastAccessDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LastPasswordRecoverRequestDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreationUTC = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -115,8 +154,7 @@ namespace Hub.Domain.Migrations
                         name: "FK_PortalUser_Person_PersonId",
                         column: x => x.PersonId,
                         principalTable: "Person",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -194,6 +232,12 @@ namespace Hub.Domain.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AccessRule");
+
+            migrationBuilder.DropTable(
+                name: "Log");
+
+            migrationBuilder.DropTable(
+                name: "LogField");
 
             migrationBuilder.DropTable(
                 name: "PortalUserFingerprints");
