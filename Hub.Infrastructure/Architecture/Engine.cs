@@ -256,7 +256,13 @@ namespace Hub.Infrastructure.Architecture
                 TypeNameHandling = TypeNameHandling.Auto
             };
 
+            if (nameProvider == null)
+            {
+                nameProvider = new DefaultNameProvider();
+            }
+
             Singleton<IEntityNameProvider>.Instance = nameProvider;
+
             Singleton<LoopTenantManager>.Instance = new LoopTenantManager();
 
             if (dependencyRegistrars == null)

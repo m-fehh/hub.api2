@@ -9,5 +9,12 @@
         /// método responsável obter o tenant atual do sistema
         /// </summary>
         string TenantName();
+
+        /// <summary>
+        /// método responsável por obter o tenant da aplicação através de uma URL informada
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        string TenantByUrl(string url);
     }
 }

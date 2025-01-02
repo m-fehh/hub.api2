@@ -41,6 +41,7 @@ using Hub.Infrastructure.Web.ModelBinder;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Autofac;
+using Hub.Application;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -71,7 +72,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
 {
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
-        nameProvider: new EntityNameProvider(),
+        nameProvider: new HubTenantNameProvider(),
         tasks:
         new List<IStartupTask>()
         {
@@ -371,9 +372,7 @@ app.UseDefaultFiles();
 
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(
-           Path.Combine(builder.Environment.ContentRootPath, "Content")),
-    RequestPath = "/Content"
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Content")), RequestPath = "/Content"
 });
 
 app.UseRouting();
@@ -395,7 +394,7 @@ app.UseStatusCodePages(context =>
 });
 
 app.UseRequestCulture();
-//app.UsehubRequestTenant();
+app.UseRequestTenant();
 app.UseRequestAuth();
 
 app.UseOutputCaching();

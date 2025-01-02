@@ -59,7 +59,7 @@ namespace Hub.Infrastructure.DependencyInjection
 
             builder.RegisterType<DefaultLocalizationProvider>().As<ILocalizationProvider>().AsSelf();
 
-            builder.RegisterType<EntityNameProvider>().As<IEntityNameProvider>().AsSelf();
+            builder.RegisterType<DefaultNameProvider>().As<IEntityNameProvider>().AsSelf();
 
             builder.RegisterType<NominatorManager>().As<INominatorManager>().SingleInstance();
         }

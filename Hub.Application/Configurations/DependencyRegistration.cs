@@ -13,6 +13,8 @@ namespace Hub.Application.Configurations
         public void Register(ContainerBuilder builder) 
         {
             builder.RegisterType<HangfireStartup>().AsSelf().SingleInstance();
+            builder.RegisterType<HubTenantNameProvider>().AsSelf().SingleInstance();
+
 
 
             #region SERVICES 
