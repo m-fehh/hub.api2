@@ -1,5 +1,6 @@
 ﻿using Hub.Domain.Entities;
 using Hub.Domain.Entities.Logs;
+using Hub.Domain.Entities.OrganizationalStructure;
 using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -17,6 +18,12 @@ public class EntityDbContext : DbContext
     public DbSet<ProfileGroup> ProfileGroups { get; set; } = null!;
 
     public DbSet<AccessRule> AccessRules { get; set; } = null!;
+
+    public DbSet<OrganizationalStructure> OrganizationalStructures { get; set; } = null!;
+
+    public DbSet<OrganizationalStructureConfig> OrganizationalStructureConfigs { get; set; } = null!;
+
+    public DbSet<OrgStructConfigDefault> OrgStructConfigDefaults { get; set; } = null!;
 
     
 
@@ -77,3 +84,7 @@ public class EntityDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 }
+
+
+//add-migration "XXX" -Context EntityDbContext'.
+//Update-Database -Context EntityDbContext

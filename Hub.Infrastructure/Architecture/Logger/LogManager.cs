@@ -9,6 +9,7 @@ using Hub.Infrastructure.Nominator.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
+using System.Configuration;
 using System.Net;
 using System.Reflection;
 
@@ -23,6 +24,21 @@ namespace Hub.Infrastructure.Architecture.Logger
 
         public ILog Audit(IBaseEntity obj, ELogAction action, bool verifyLogableEntity = true, bool deeper = true)
         {
+            bool logsActived = true;
+
+            HttpContextAccessor httpContextAccessor = new HttpContextAccessor();
+            if (bool.TryParse(ConfigurationManager.AppSettings["LogsActived"], out logsActived))
+            {
+                if (!logsActived) return null;
+            }
+
+            if (obj == null) return null;
+
+            if (verifyLogableEntity)
+            {
+                if (!typeof(ILogableEntity).IsAssignableFrom(obj.GetType())) return null;
+            }
+
             using (Engine.BeginLifetimeScope())
             {
                 ILog log;
@@ -43,8 +59,22 @@ namespace Hub.Infrastructure.Architecture.Logger
                     }
 
                     log.ObjectId = obj.Id;
-                    log.ObjectName = Engine.Get(obj.GetType().Name.Replace("Proxy", ""));
 
+                    if (typeof(ILogableEntityCustomName).IsAssignableFrom(obj.GetType()))
+                    {
+                        if (!string.IsNullOrEmpty((obj as ILogableEntityCustomName).CustomLogName))
+                        {
+                            log.ObjectName = (obj as ILogableEntityCustomName).CustomLogName;
+                        }
+                        else
+                        {
+                            log.ObjectName = Engine.Get(obj.GetType().Name.Replace("Proxy", ""));
+                        }
+                    }
+                    else
+                    {
+                        log.ObjectName = Engine.Get(obj.GetType().Name.Replace("Proxy", ""));
+                    }
                     log.CreateUser = Engine.Resolve<ISecurityProvider>().GetCurrent();
                     log.Message = Engine.Resolve<INominatorManager>().GetName(obj);
 
@@ -75,6 +105,13 @@ namespace Hub.Infrastructure.Architecture.Logger
 
         public void Error(Exception ex)
         {
+            bool logsActived = true;
+
+            if (bool.TryParse(ConfigurationManager.AppSettings["LogsActived"], out logsActived))
+            {
+                if (!logsActived) return;
+            }
+
             ILog log;
 
             if (Engine.TryResolve(out log))
