@@ -1,5 +1,6 @@
 ﻿using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Autofac;
+using Hub.Infrastructure.Database.Interfaces;
 using StackExchange.Redis;
 
 namespace Hub.Infrastructure.Architecture.Cache
@@ -177,10 +178,8 @@ namespace Hub.Infrastructure.Architecture.Cache
 
         private RedisKey GetComplexKey(string key)
         {
-            //var tenantName = Singleton<INhNameProvider>.Instance.TenantName();
-            //return $"{environment}:{tenantName}:{key}";
-
-            return $"{environment}:{key}";
+            var tenantName = Singleton<IEntityNameProvider>.Instance.TenantName();
+            return $"{environment}:{tenantName}:{key}";
         }
     }
 }
