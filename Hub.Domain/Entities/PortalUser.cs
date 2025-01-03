@@ -1,8 +1,8 @@
 ﻿using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Hub.Domain.Entities.OrgStructure;
 
 namespace Hub.Domain.Entities
 {
@@ -45,6 +45,13 @@ namespace Hub.Domain.Entities
         [StringLength(50)]
         public virtual string? TempPassword { get; set; }
 
+        public virtual long? DefaultOrgStructureId { get; set; }
+
+        [ForeignKey(nameof(DefaultOrgStructureId))]
+        public virtual OrganizationalStructure DefaultOrgStructure { get; set; }
+
+
+        public virtual ICollection<OrganizationalStructure> OrganizationalStructures { get; set; }
 
         [IgnoreLog]
         public virtual bool ChangingPass { get; set; }

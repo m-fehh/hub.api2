@@ -3,7 +3,7 @@ using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Hub.Domain.Entities.OrganizationalStructure
+namespace Hub.Domain.Entities.OrgStructure
 {
     [Table("OrganizationalStructureConfig")]
     public class OrganizationalStructureConfig : BaseEntity, IModificationControl

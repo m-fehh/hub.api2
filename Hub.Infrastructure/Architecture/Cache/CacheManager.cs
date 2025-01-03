@@ -82,36 +82,36 @@ namespace Hub.Infrastructure.Architecture.Cache
 
             var prefix = $"{Singleton<IEntityNameProvider>.Instance.TenantName()}{environment}{culture}";
 
-            //if (level.Equals(ProfileAndDomainLevel))
-            //{
-            //    var currentDomain = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrentDomain();
+            if (level.Equals(ProfileAndDomainLevel))
+            {
+                var currentDomain = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrentDomain();
 
-            //    var profileId = Engine.Resolve<ISecurityProvider>().GetCurrentProfileId();
+                var profileId = Engine.Resolve<ISecurityProvider>().GetCurrentProfileId();
 
-            //    return $"{prefix}Profile{profileId}Domain{currentDomain?.Id}";
-            //}
-            //else if (level.Equals(ProfileAndStructureLevel))
-            //{
-            //    var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
+                return $"{prefix}Profile{profileId}Domain{currentDomain?.Id}";
+            }
+            else if (level.Equals(ProfileAndStructureLevel))
+            {
+                var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
 
-            //    var profileId = Engine.Resolve<ISecurityProvider>().GetCurrentProfileId();
+                var profileId = Engine.Resolve<ISecurityProvider>().GetCurrentProfileId();
 
-            //    return $"{prefix}Profile{profileId}Structure{currentOrganizationStructure?.Id}";
-            //}
-            //else if (level.Equals(UserAndStructureLevel))
-            //{
-            //    var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
+                return $"{prefix}Profile{profileId}Structure{currentOrganizationStructure?.Id}";
+            }
+            else if (level.Equals(UserAndStructureLevel))
+            {
+                var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
 
-            //    var userId = Engine.Resolve<ISecurityProvider>().GetCurrentId();
+                var userId = Engine.Resolve<ISecurityProvider>().GetCurrentId();
 
-            //    return $"{prefix}User{userId}Structure{currentOrganizationStructure?.Id}";
-            //}
-            //else if (level.Equals(StructureLevel))
-            //{
-            //    var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
+                return $"{prefix}User{userId}Structure{currentOrganizationStructure?.Id}";
+            }
+            else if (level.Equals(StructureLevel))
+            {
+                var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
 
-            //    return $"{prefix}Structure{currentOrganizationStructure?.Id}";
-            //}
+                return $"{prefix}Structure{currentOrganizationStructure?.Id}";
+            }
 
             if (level.Equals(UserLevel))
             {

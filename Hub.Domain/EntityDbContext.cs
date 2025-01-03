@@ -1,6 +1,6 @@
 ﻿using Hub.Domain.Entities;
 using Hub.Domain.Entities.Logs;
-using Hub.Domain.Entities.OrganizationalStructure;
+using Hub.Domain.Entities.OrgStructure;
 using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;

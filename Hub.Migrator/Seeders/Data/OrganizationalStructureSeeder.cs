@@ -1,4 +1,4 @@
-﻿using Hub.Domain.Entities;
+﻿using Hub.Domain.Entities.OrgStructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hub.Migrator.Seeders.Data

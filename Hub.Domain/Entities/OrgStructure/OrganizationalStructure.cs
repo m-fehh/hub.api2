@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Hub.Infrastructure.Architecture.Logger.Interfaces;
 
-namespace Hub.Domain.Entities.OrganizationalStructure
+namespace Hub.Domain.Entities.OrgStructure
 {
     [Table("OrganizationalStructure")]
     public class OrganizationalStructure : BaseEntity, ILogableEntity, IModificationControl

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Hub.Domain.Entities.OrganizationalStructure
+namespace Hub.Domain.Entities.OrgStructure
 {
     [Table("OrgStructConfigDefault")]
     public class OrgStructConfigDefault : BaseEntity
