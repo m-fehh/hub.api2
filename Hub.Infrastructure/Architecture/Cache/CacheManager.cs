@@ -1,6 +1,8 @@
 ﻿using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.DistributedLock.Interfaces;
+using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.Autofac;
+using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.HealthChecker;
 using Hub.Infrastructure.HealthChecker.Builders;
 using Hub.Infrastructure.HealthChecker.Interfaces;
@@ -78,9 +80,9 @@ namespace Hub.Infrastructure.Architecture.Cache
                 return $"{environment}{culture}";
             }
 
-            //var prefix = $"{Singleton<INhNameProvider>.Instance.TenantName()}{environment}{culture}";
+            var prefix = $"{Singleton<IEntityNameProvider>.Instance.TenantName()}{environment}{culture}";
 
-            //if (level.Equals(CacheManager.ProfileAndDomainLevel))
+            //if (level.Equals(ProfileAndDomainLevel))
             //{
             //    var currentDomain = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrentDomain();
 
@@ -88,7 +90,7 @@ namespace Hub.Infrastructure.Architecture.Cache
 
             //    return $"{prefix}Profile{profileId}Domain{currentDomain?.Id}";
             //}
-            //else if (level.Equals(CacheManager.ProfileAndStructureLevel))
+            //else if (level.Equals(ProfileAndStructureLevel))
             //{
             //    var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
 
@@ -96,7 +98,7 @@ namespace Hub.Infrastructure.Architecture.Cache
 
             //    return $"{prefix}Profile{profileId}Structure{currentOrganizationStructure?.Id}";
             //}
-            //else if (level.Equals(CacheManager.UserAndStructureLevel))
+            //else if (level.Equals(UserAndStructureLevel))
             //{
             //    var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
 
@@ -104,22 +106,23 @@ namespace Hub.Infrastructure.Architecture.Cache
 
             //    return $"{prefix}User{userId}Structure{currentOrganizationStructure?.Id}";
             //}
-            //else if (level.Equals(CacheManager.StructureLevel))
+            //else if (level.Equals(StructureLevel))
             //{
             //    var currentOrganizationStructure = Engine.Resolve<ICurrentOrganizationStructure>().GetCurrent();
 
             //    return $"{prefix}Structure{currentOrganizationStructure?.Id}";
             //}
-            //else if (level.Equals(CacheManager.UserLevel))
-            //{
-            //    var userId = Engine.Resolve<ISecurityProvider>().GetCurrentId();
 
-            //    return $"{prefix}User{userId}";
-            //}
+            if (level.Equals(UserLevel))
+            {
+                var userId = Engine.Resolve<ISecurityProvider>().GetCurrentId();
+
+                return $"{prefix}User{userId}";
+            }
+
             else if (level.Equals(TenantLevel))
             {
-                return "";
-                //return prefix;
+                return prefix;
             }
 
             return null;
