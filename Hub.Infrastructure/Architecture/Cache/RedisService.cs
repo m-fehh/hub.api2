@@ -8,20 +8,19 @@ namespace Hub.Infrastructure.Architecture.Cache
     public class RedisService : IRedisService
     {
         private string environment;
-
         private Dictionary<string, Lazy<ConnectionMultiplexer>> connections = new Dictionary<string, Lazy<ConnectionMultiplexer>>();
-
         private static object locker = new object();
-
         private static bool isConnecting = false;
 
         public RedisService()
         {
             environment = Engine.AppSettings["environment-redis"] ?? Engine.AppSettings["environment"];
+
             if (string.IsNullOrEmpty(environment))
             {
                 throw new ArgumentNullException(nameof(environment));
             }
+
             connections.Add("redis", LazyConnection("redis"));
         }
 
@@ -103,21 +102,21 @@ namespace Hub.Infrastructure.Architecture.Cache
 
         public void DeleteFromPattern(string pattern)
         {
-            //var tenantName = Singleton<INhNameProvider>.Instance.TenantName();
+            var tenantName = Singleton<IEntityNameProvider>.Instance.TenantName();
 
-            //var connection = GetRedisConnection();
+            var connection = GetRedisConnection();
 
-            //var database = connection.GetDatabase();
+            var database = connection.GetDatabase();
 
-            //if (pattern.StartsWith("*"))
-            //{
-            //    pattern = pattern.Substring(1);
-            //}
+            if (pattern.StartsWith("*"))
+            {
+                pattern = pattern.Substring(1);
+            }
 
-            //foreach (var key in connection.GetEndPoints().SelectMany(e => connection.GetServer(e).Keys(0, $"{environment}:{tenantName}:*{pattern}")).ToList())
-            //{
-            //    database.KeyDelete(key);
-            //}
+            foreach (var key in connection.GetEndPoints().SelectMany(e => connection.GetServer(e).Keys(0, $"{environment}:{tenantName}:*{pattern}")).ToList())
+            {
+                database.KeyDelete(key);
+            }
         }
 
         void RetryTimeouts(Action action)
