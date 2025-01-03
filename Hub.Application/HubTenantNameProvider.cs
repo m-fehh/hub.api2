@@ -3,6 +3,7 @@ using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Web;
 using System.Collections.Concurrent;
+using Hub.Infrastructure.Database.Services;
 
 namespace Hub.Application
 {
@@ -12,15 +13,13 @@ namespace Hub.Application
 
         public static ConcurrentDictionary<string, string> subdomains = new ConcurrentDictionary<string, string>();
 
-        private static readonly HttpClient _httpClient = new HttpClient();
-
         public string TenantName()
         {
-            var defaultTenantName = "adm";
+            string? defaultTenantName = "admin";
 
             try
             {
-                if (!string.IsNullOrEmpty(CurrentTenant.Value) && CurrentTenant.Value != "adm")
+                if (!string.IsNullOrEmpty(CurrentTenant.Value) && CurrentTenant.Value != "admin")
                 {
                     return CurrentTenant.Value;
                 }
@@ -36,7 +35,7 @@ namespace Hub.Application
 
                 using (Engine.BeginIgnoreTenantConfigs())
                 {
-                    var configFixedDomain = Engine.AppSettings["FixedDomain"];
+                    string? configFixedDomain = Engine.AppSettings["FixedDomain"];
 
                     if (!string.IsNullOrWhiteSpace(configFixedDomain))
                     {
@@ -47,7 +46,7 @@ namespace Hub.Application
                 if (HttpContextHelper.Current == null ||
                 HttpContextHelper.Current.Request == null) return defaultTenantName;
 
-                var baseUrl = string.Format("{0}://{1}", HttpContextHelper.Current.Request.Scheme, HttpContextHelper.Current.Request.Host.Value);
+                string? baseUrl = string.Format("{0}://{1}", HttpContextHelper.Current.Request.Scheme, HttpContextHelper.Current.Request.Host.Value);
 
                 return TenantByUrl(baseUrl);
             }
@@ -66,16 +65,7 @@ namespace Hub.Application
                 {
                     if (!string.IsNullOrEmpty(url))
                     {
-                        var configServer = Engine.AppSettings["evup_config_url"];
-
-                        if (string.IsNullOrWhiteSpace(configServer))
-                        {
-                            configServer = "https://config.evup.com.br";
-                        }
-
-                        url = url.Replace("https://", "");
-
-                        string result = _httpClient.GetStringAsync($"{configServer}/api/Tenant/Get?url={url}").Result;
+                        string result = Engine.Resolve<TenantService>().Get(url);
 
                         if (!string.IsNullOrEmpty(result))
                         {
@@ -84,7 +74,7 @@ namespace Hub.Application
                     }
                 }
 
-                return "adm";
+                return "admin";
             };
             using (Engine.BeginIgnoreTenantConfigs())
             {
@@ -96,7 +86,7 @@ namespace Hub.Application
         {
             using (Engine.BeginIgnoreTenantConfigs())
             {
-                var configFixedDomain = Engine.AppSettings["FixedDomain"];
+                string? configFixedDomain = Engine.AppSettings["FixedDomain"];
 
                 if (!string.IsNullOrWhiteSpace(configFixedDomain))
                 {

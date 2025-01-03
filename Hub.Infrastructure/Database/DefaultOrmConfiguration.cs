@@ -1,8 +1,7 @@
-﻿using Dapper;
-using Hub.Infrastructure.Architecture;
+﻿using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.Database.Models;
-using Microsoft.Data.SqlClient;
+using Hub.Infrastructure.Database.Models.Administrator;
+using Hub.Infrastructure.Database.Services;
 
 namespace Hub.Infrastructure.Database
 {
@@ -10,74 +9,49 @@ namespace Hub.Infrastructure.Database
     {
         public void Configure()
         {
-            var mapeamento = new ConfigurationTenant
+            var configurationTenant = new ConfigurationTenant
             {
                 Mapeamentos = new ConfigurationMapeamentoCollection()
             };
 
-            var connectionStringAdmin = Engine.ConnectionString("adm");
             var baseConfigurator = Engine.Resolve<ConnectionStringBaseConfigurator>().Get();
 
-            if (!string.IsNullOrEmpty(connectionStringAdmin))
+            var defaultMapeamento = new ConfigurationMapeamento
             {
-                var map = new ConfigurationMapeamento
-                {
-                    MapeamentoId = "default",
-                    ConfigurationTenants = new ConfigurationDataCollection()
-                };
+                MapeamentoId = "default",
+                ConfigurationTenants = new ConfigurationDataCollection()
+            };
 
-                using (var connection = new SqlConnection(connectionStringAdmin))
-                {
-                    const string query = @"
-                        SELECT 
-                            Id, 
-                            Name,
-                            Subdomain,
-                            ConnectionString, 
-                            IsActive, 
-                            DefaultCulture
-                        FROM 
-                            Tenants
-                        WHERE 
-                            IsActive = 1";
+            var allClients = Engine.Resolve<TenantService>().GetAllClients();
 
-                    var clients = connection.Query<AdmClient>(query);
-
-                    foreach (var client in clients)
-                    {
-                        using (Engine.BeginLifetimeScope(client.Subdomain))
-                        {
-                            using (Engine.BeginIgnoreTenantConfigs(false))
-                            {
-                                map.ConfigurationTenants.Add(new ConfigurationData
-                                {
-                                    TenantId = client.Id,
-                                    TenantName = client.Name,
-                                    Subdomain = client.Subdomain,
-                                    ConnectionString = client.ConnectionString ?? Engine.ConnectionString("default"),
-                                    SchemaDefault = $"{baseConfigurator.ConnectionStringBaseSchema}{client.Id}",
-                                    Culture = client.DefaultCulture
-                                });
-                            }
-                        }
-                    }
-                }
-
-                if (Singleton<ConfigurationTenant>.Instance?.AppPath != null)
-                {
-                    //se o valor do AppPath já estiver preenchido, preserva.
-                    //acontece que nas functions o appPath é setado diretamento no Startup, e rotinas de reconfiguração do ORM fazem passar por aqui novamente.
-                    mapeamento.AppPath = Singleton<ConfigurationTenant>.Instance?.AppPath;
-                }
-                else
-                {
-                    mapeamento.AppPath = AppDomain.CurrentDomain.BaseDirectory;
-                }
-
-                mapeamento.Mapeamentos.Add(map);
+            foreach (var client in allClients)
+            {
+                AddTenantConfiguration(client, baseConfigurator, defaultMapeamento);
             }
 
-            Singleton<ConfigurationTenant>.Instance = mapeamento;
+            configurationTenant.AppPath = Singleton<ConfigurationTenant>.Instance?.AppPath ?? AppDomain.CurrentDomain.BaseDirectory;
+            configurationTenant.Mapeamentos.Add(defaultMapeamento);
+
+            Singleton<ConfigurationTenant>.Instance = configurationTenant;
+        }
+
+        private void AddTenantConfiguration(Tenant client, ConnectionStringBaseVM baseConfigurator, ConfigurationMapeamento defaultMapeamento)
+        {
+            using (Engine.BeginLifetimeScope(client.Subdomain))
+            {
+                using (Engine.BeginIgnoreTenantConfigs(false))
+                {
+                    defaultMapeamento.ConfigurationTenants.Add(new ConfigurationData
+                    {
+                        TenantId = client.Id,
+                        TenantName = client.Name,
+                        Subdomain = client.Subdomain,
+                        ConnectionString = client.ConnectionString ?? Engine.ConnectionString("default"),
+                        SchemaDefault = $"{baseConfigurator.ConnectionStringBaseSchema}{client.Id}",
+                        Culture = client.Culture
+                    });
+                }
+            }
         }
     }
 }

@@ -1,9 +1,8 @@
 ﻿using Dapper;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.Cache;
-using Hub.Infrastructure.Autofac;
 using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.Database.Models.Administrator;
 using Microsoft.Data.SqlClient;
 
 namespace Hub.Infrastructure.Database
@@ -17,7 +16,7 @@ namespace Hub.Infrastructure.Database
         {
             var _tenantName = Singleton<IEntityNameProvider>.Instance.TenantName();
 
-            Func<string, AdmClient> fn = (tenantName) =>
+            Func<string, Tenant> fn = (tenantName) =>
             {
                 var connectionString = Engine.ConnectionString("adm");
                 if (string.IsNullOrEmpty(connectionString))
@@ -29,33 +28,32 @@ namespace Hub.Infrastructure.Database
                     var query = $@"
                         DECLARE @tenantName NVARCHAR(200) = '{tenantName}';
                         
-                        IF EXISTS(SELECT 1 FROM sys.columns 
-                                  WHERE Name = N'CultureName'
-                                  AND Object_ID = Object_ID(N'adm.Client'))
+                        IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS  WHERE COLUMN_NAME = N'Culture'  AND TABLE_SCHEMA = N'Admin' AND TABLE_NAME = N'Tenants')
                         BEGIN
                         	DECLARE @SQLString NVARCHAR(500);  
                         	DECLARE @ParmDefinition NVARCHAR(500);
                         
-                            SET @SQLString= N'SELECT a.Id, a.Name, a.Subdomain, a.Logo,	a.CultureName FROM adm.Client a WHERE a.Subdomain = @tenantName';
+                            SET @SQLString= N'SELECT [Id], [Name], [Subdomain], [Inative], [Culture], [ConnectionString] FROM [Admin].[Tenants] WHERE [Subdomain] = @tenantName';
                         	SET @ParmDefinition = N'@tenantName nvarchar(200)';
                         	EXECUTE sp_executesql @SQLString, @ParmDefinition, @tenantName; 
                         END
                         ELSE
                         BEGIN
                         	 SELECT
-								Id,
-                                Name,
-                                Subdomain,
-                                ConnectionString,
-                                IsActive,
-                                DefaultCulture
-                        	FROM Tenants a
-                        	WHERE a.Subdomain = @tenantName;
+                                [Id],
+                            	[Name],
+                            	[Subdomain],
+                            	[Inative],
+                            	[Culture],
+                            	[ConnectionString]
+                            FROM
+                                [Admin].[Tenants]
+                            WHERE
+                                [Subdomain] = @tenantName;
                         END
                         ";
 
-                    var client = connection.QueryFirstOrDefault<AdmClient>(query);
-                    return client;
+                    return connection.QueryFirstOrDefault<Tenant>(query);
                 }
             };
 
@@ -63,3 +61,5 @@ namespace Hub.Infrastructure.Database
         }
     }
 }
+
+

@@ -1,12 +1,13 @@
 ﻿using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.Database.Models.Administrator;
 
 namespace Hub.Infrastructure.Database.MultiTenant
 {
     public class TenantProvider : ITenantProvider
     {
-        private readonly Dictionary<string, AdmClient> _tenantConfigurations;
+        private readonly Dictionary<string, Tenant> _tenantConfigurations;
 
         public string? CurrentTenant => Engine.Resolve<TenantLifeTimeScope>().CurrentTenantName;
 
@@ -14,13 +15,13 @@ namespace Hub.Infrastructure.Database.MultiTenant
         {
             var tenants = Singleton<ConfigurationTenant>.Instance.Mapeamentos[0].ConfigurationTenants;
 
-            _tenantConfigurations = tenants.ToDictionary(tenant => tenant.Subdomain, tenant => new AdmClient
+            _tenantConfigurations = tenants.ToDictionary(tenant => tenant.Subdomain, tenant => new Tenant
             {
                 Id = tenant.TenantId,
                 Name = tenant.TenantName,
                 Subdomain = tenant.Subdomain,
                 ConnectionString = tenant.ConnectionString ?? Engine.ConnectionString("default"),
-                DefaultCulture = tenant.Culture,
+                Culture = tenant.Culture,
                 Schema = tenant.SchemaDefault
             });
         }
@@ -29,9 +30,9 @@ namespace Hub.Infrastructure.Database.MultiTenant
 
         public string? ConnectionString => GetTenantConfiguration()?.ConnectionString ?? null;
 
-        public List<AdmClient> Tenants => _tenantConfigurations.Values.ToList();
+        public List<Tenant> Tenants => _tenantConfigurations.Values.ToList();
 
-        private AdmClient? GetTenantConfiguration()
+        private Tenant? GetTenantConfiguration()
         {
             if (CurrentTenant != null && _tenantConfigurations.TryGetValue(CurrentTenant, out var config))
             {

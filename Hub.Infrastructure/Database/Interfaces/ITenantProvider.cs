@@ -1,4 +1,5 @@
 ﻿using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.Database.Models.Administrator;
 
 namespace Hub.Infrastructure.Database.Interfaces
 {
@@ -10,6 +11,6 @@ namespace Hub.Infrastructure.Database.Interfaces
 
         string ConnectionString { get; }
 
-        public List<AdmClient> Tenants { get; }
+        public List<Tenant> Tenants { get; }
     }
 }

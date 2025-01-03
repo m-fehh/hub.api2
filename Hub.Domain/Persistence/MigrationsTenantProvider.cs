@@ -1,5 +1,5 @@
 ﻿using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.Database.Models.Administrator;
 
 namespace Hub.Domain.Persistence
 {
@@ -11,7 +11,7 @@ namespace Hub.Domain.Persistence
 
         public string ConnectionString { get; set; }
 
-        public List<AdmClient> Tenants { get; set; }
+        public List<Tenant> Tenants { get; set; }
     }
 
 }

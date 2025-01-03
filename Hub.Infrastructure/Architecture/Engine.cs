@@ -369,9 +369,9 @@ namespace Hub.Infrastructure.Architecture
                     var info = Engine.Resolve<ITenantManager>().GetInfo();
                     if (info != null)
                     {
-                        if (info.DefaultCulture != null)
+                        if (info.Culture != null)
                         {
-                            var ci = new CultureInfo(CultureInfoHelper.SetCultureInfo(info.DefaultCulture));
+                            var ci = new CultureInfo(CultureInfoHelper.SetCultureInfo(info.Culture));
                             CultureInfo.CurrentCulture = ci;
                             CultureInfo.CurrentUICulture = ci;
                         }

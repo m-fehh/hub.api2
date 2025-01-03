@@ -1,10 +1,12 @@
 ﻿using Autofac;
 using Hub.Application.Hangfire;
 using Hub.Application.Services;
+using Hub.Domain.Administrator;
 using Hub.Domain.Entities;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Infrastructure.Web.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hub.Application.Configurations
 {
@@ -15,9 +17,7 @@ namespace Hub.Application.Configurations
             builder.RegisterType<HangfireStartup>().AsSelf().SingleInstance();
             builder.RegisterType<HubTenantNameProvider>().AsSelf().SingleInstance();
 
-
-
-            #region SERVICES 
+            #region SERVICES TENANTS
 
             builder.RegisterType<DocumentTypeService>().As<ICrudService<DocumentType>>();
             builder.RegisterType<DocumentTypeService>().AsSelf();
@@ -37,6 +37,8 @@ namespace Hub.Application.Configurations
             builder.RegisterType<UserService>().As<ICrudService<PortalUser>>().As<ISecurityProvider>().AsSelf().InstancePerLifetimeScope();
 
             builder.RegisterType<LoginService>().AsSelf();
+
+            builder.RegisterType<AdminDbContext>().As<DbContext>().InstancePerLifetimeScope();
 
             #endregion
 

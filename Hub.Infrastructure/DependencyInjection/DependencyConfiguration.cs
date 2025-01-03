@@ -20,6 +20,9 @@ using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Autofac;
 using FMK.Core.Nominator;
 using Hub.Infrastructure.Nominator.Interfaces;
+using Hub.Infrastructure.Database.Services;
+using Hub.Infrastructure.Web.Interfaces;
+using Hub.Infrastructure.Database.Models.Administrator;
 
 namespace Hub.Infrastructure.DependencyInjection
 {
@@ -62,6 +65,13 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<DefaultNameProvider>().As<IEntityNameProvider>().AsSelf();
 
             builder.RegisterType<NominatorManager>().As<INominatorManager>().SingleInstance();
+
+            #region SERVICES ADMIN
+
+            builder.RegisterType<TenantService>().As<ICrudService<Tenant>>().AsSelf();
+            builder.RegisterType<TenantService>().AsSelf();
+
+            #endregion
         }
 
         void ActivingRepository(IActivatingEventArgs<object> e)
