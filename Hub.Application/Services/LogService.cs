@@ -5,6 +5,10 @@ using Hub.Infrastructure.Extensions;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Application.Models.ViewModels;
 using LogEntity = Hub.Domain.Entities.Logs.Log;
+using Hub.Infrastructure.Database.Models;
+using Hub.Application.CorporateStructure.Interfaces;
+using Hub.Domain.Entities.Users;
+using Hub.Infrastructure.Architecture.Security.Interfaces;
 
 namespace Hub.Application.Services
 {
@@ -71,8 +75,28 @@ namespace Hub.Application.Services
         /// <param name="logVersion">Versão do log (opcional).</param>
         public void Audit(string objectName, long objectId, ELogAction action, long? ownerOrgStructId = null, string code = "", string status = "", string message = "", int? logVersion = null)
         {
-            var formattedMessage = (string.IsNullOrEmpty(message) && !string.IsNullOrEmpty(code)) ? string.Format(code, Engine.Get(status)) : message ?? string.Empty;
+            // Inicialização de variáveis
+            bool hasStructureId = true;
+            long structureId = ownerOrgStructId ?? 0;
+            string resolvedStructureId = string.Empty;
+            OrganizationalStructure currentOrg = null;
 
+            // Resolução da estrutura organizacional, se não fornecida
+            if (structureId == 0)
+            {
+                resolvedStructureId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+
+                if (string.IsNullOrEmpty(resolvedStructureId))
+                {
+                    hasStructureId = false;
+                }
+                else
+                {
+                    structureId = long.Parse(resolvedStructureId);
+                }
+            }
+
+            // Preparação do log
             var log = new LogEntity
             {
                 CreateDate = DateTime.Now,
@@ -80,21 +104,34 @@ namespace Hub.Application.Services
                 ObjectId = objectId,
                 Action = action,
                 LogType = ELogType.Audit,
-                Message = formattedMessage,
+                Message = message ?? string.Empty,
                 LogVersion = logVersion ?? DefaultLogVersion
             };
 
-            var repository = Engine.Resolve<IRepository<LogEntity>>();
-
-            using (var transaction = repository.BeginTransaction())
+            if (hasStructureId)
             {
-                repository.Insert(log);
-                if (transaction != null)
+                currentOrg = Engine.Resolve<IRepository<OrganizationalStructure>>().GetById(structureId);
+
+                log.OwnerOrgStruct = currentOrg;
+                log.CreateUser = Engine.Resolve<ISecurityProvider>().GetCurrent();
+
+                if (log.CreateUser is PortalUser currentUser)
                 {
-                    repository.Commit();
+                    log.IpAddress = currentUser.IpAddress;
                 }
             }
+
+            // Persistência do log
+            var logRepository = Engine.Resolve<IRepository<LogEntity>>();
+            using (var transaction = logRepository.BeginTransaction())
+            {
+                logRepository.Insert(log);
+
+                if (transaction != null) logRepository.Commit();
+            }
         }
+
+        #region PRIVATE METHODS 
 
         /// <summary>
         /// Formata a mensagem de erro com dados adicionais.
@@ -107,5 +144,42 @@ namespace Hub.Application.Services
             var baseMessage = exception.CreateExceptionString();
             return string.IsNullOrEmpty(additionalData) ? baseMessage : $"{baseMessage}\r\nDados Adicionais: {additionalData}";
         }
+
+        /// <summary>
+        /// Remove último caracter da string
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private string StringAjust(string data)
+        {
+            return string.Join(",", data).Substring(0, string.Join(",", data).Length - 1);
+        }
+
+        /// <summary>
+        /// Traduz o tipo boolean de 1(true) ou 0(false) para SIM ou NÃO
+        /// </summary>
+        /// <param name="data"> tipo de dado em string true ou false </param>
+        /// <returns></returns>
+        private string TranslateFilterType(string data)
+        {
+            var returnData = string.Empty;
+
+            if (data == "true")
+            {
+                returnData = Engine.Get("Yes");
+            }
+            else if (data == "false")
+            {
+                returnData = Engine.Get("No");
+            }
+            else
+            {
+                returnData = data;
+            }
+
+            return returnData;
+        } 
+
+        #endregion
     }
 }

@@ -9,12 +9,10 @@ namespace Hub.Infrastructure.Architecture.Security.Interfaces
 
         void Authenticate(string token);
 
-        //bool Authorize(string role);
+        bool Authorize(string role);
 
         //List<string> GetAuthorizedRoles(List<string> roles);
         IUserAccount GetCurrent();
-
-        //void SetCurrentUser(IUser user);
 
         IProfileGroup GetCurrentProfile();
 

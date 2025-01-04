@@ -1,4 +1,4 @@
-﻿using Hub.Domain.Entities;
+﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.OAuth.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;

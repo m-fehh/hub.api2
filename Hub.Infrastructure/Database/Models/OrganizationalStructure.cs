@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Hub.Infrastructure.Architecture.Logger.Interfaces;
 
-namespace Hub.Domain.Entities.OrgStructure
+namespace Hub.Infrastructure.Database.Models
 {
     [Table("OrganizationalStructure")]
     public class OrganizationalStructure : BaseEntity, ILogableEntity, IModificationControl
@@ -35,6 +35,9 @@ namespace Hub.Domain.Entities.OrgStructure
         public virtual OrganizationalStructure Father { get; set; }
 
         public virtual ICollection<OrganizationalStructure> Childrens { get; set; }
+
+        [IgnoreLog]
+        public virtual string Tree { get; set; }
 
         [MaxLength(100)]
         public virtual string? ExternalCode { get; set; }

@@ -4,7 +4,7 @@ namespace Hub.Infrastructure.Database.Interfaces
 {
     /// <summary>
     /// Interface usada pela plataforma para identificar qual o atual nível organizacional selecionado pelo usuário.
-    /// Para sistemas satélites (como app), não se aplica.
+    /// Para sistemas satélites (ex: app), não se aplica.
     /// </summary>
     public interface ICurrentOrganizationStructure
     {

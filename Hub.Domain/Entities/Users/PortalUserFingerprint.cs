@@ -3,7 +3,7 @@ using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Hub.Domain.Entities
+namespace Hub.Domain.Entities.Users
 {
     public class PortalUserFingerprint : BaseEntity, IModificationControl
     {

@@ -3,17 +3,14 @@ using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations;
 using Hub.Domain.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
+using Hub.Infrastructure.Database.Interfaces;
+using Hub.Infrastructure.Database.Models;
 
 namespace Hub.Domain.Entities
 {
     [Table("Person")]
-    public class Person : BaseEntity
+    public class Person : BaseEntity, IEntityOrgStructBased, IEntityOrgStructOwned, IModificationControl
     {
-        public Person()
-        {
-            QrCodeInfo = Guid.NewGuid().ToString();
-        }
-
         [Key]
         public override long Id { get; set; }
 
@@ -24,23 +21,21 @@ namespace Hub.Domain.Entities
         [StringLength(100)]
         public virtual string Document { get; set; }
 
-        public virtual long DocumentTypeId { get; set; }
+        public virtual long OwnerOrgStructId { get; set; }
 
+        [ForeignKey(nameof(OwnerOrgStructId))]
+        public virtual OrganizationalStructure OwnerOrgStruct { get; set; }
 
-        [ForeignKey(nameof(DocumentTypeId))]
-        public virtual DocumentType DocumentType { get; set; }
-
-        public virtual EGender? Gender { get; set; }
-
-        public virtual DateTime? BirthDate { get; set; }
+        public virtual ICollection<OrganizationalStructure> OrganizationalStructures { get; set; }
 
         [StringLength(100)]
-        public virtual string Keyword { get; set; }
-
-        [StringLength(50)]
-        public virtual string QrCodeInfo { get; set; }
+        public virtual string ExternalCode { get; set; }
 
         [IgnoreLog]
-        public virtual DateTime? LastUserUpdateUTC { get; set; }
+        public virtual DateTime? CreationUTC { get; set; }
+
+
+        [IgnoreLog]
+        public virtual DateTime? LastUpdateUTC { get; set; }
     }
 }

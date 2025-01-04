@@ -1,16 +1,11 @@
 ﻿using Hub.Infrastructure.Database.Entity;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Hub.Domain.Entities
+namespace Hub.Domain.Entities.Users
 {
-    [Table("PortalUserPassHistory")]
-    public class PortalUserPassHistory : BaseEntity
+    [Table("PortalUserSettings")]
+    public class PortalUserSetting: BaseEntity
     {
         [Key]
         public override long Id { get; set; }
@@ -21,9 +16,12 @@ namespace Hub.Domain.Entities
         public virtual PortalUser PortalUser { get; set; }
 
         [Required]
-        public virtual string Password { get; set; }
+        [MaxLength(150)]
+        public virtual string Name { get; set; }
 
         [Required]
-        public virtual DateTime CreationUTC { get; set; }
+        [MaxLength(4000)]
+        public virtual string Value { get; set; }
+
     }
 }

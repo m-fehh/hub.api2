@@ -21,7 +21,11 @@ using System.IdentityModel.Tokens.Jwt;
 using Hub.Application.Models.Helpers;
 using Hub.Infrastructure.Architecture.OAuth;
 using Hub.Infrastructure.Database.Models;
-using System.Collections.Generic;
+using Hub.Domain.Entities.Users;
+using Hub.Application.CorporateStructure;
+using Hub.Application.CorporateStructure.Interfaces;
+using Hub.Domain.Enums;
+using System.Text.RegularExpressions;
 
 namespace Hub.Application.Services
 {
@@ -32,17 +36,606 @@ namespace Hub.Application.Services
         private const string TOKEN_KEY_USERPROFILEID = "profileId";
 
         private readonly IRedisService redisService;
-        private readonly ITenantManager tenantManager;
         private readonly IAccessTokenProvider accessTokenProvider;
         private readonly IUserProfileControlAccessService profileControlAccessService;
+        private readonly IHubCurrentOrganizationStructure currentOrganizationStructure;
+        private readonly IOrgStructBasedService orgStructBasedService;
 
-        public UserService(IRepository<PortalUser> repository, IRedisService redisService, ITenantManager tenantManager, IAccessTokenProvider accessTokenProvider, IUserProfileControlAccessService profileControlAccessService) : base(repository)
+        public UserService(IRepository<PortalUser> repository, IRedisService redisService, IAccessTokenProvider accessTokenProvider, IUserProfileControlAccessService profileControlAccessService, IHubCurrentOrganizationStructure currentOrganizationStructure, IOrgStructBasedService orgStructBasedService) : base(repository)
         {
             this.redisService = redisService;
-            this.tenantManager = tenantManager;
             this.accessTokenProvider = accessTokenProvider;
             this.profileControlAccessService = profileControlAccessService;
+            this.currentOrganizationStructure = currentOrganizationStructure;
+            this.orgStructBasedService = orgStructBasedService;
         }
+
+        private void ValidadeInsert(PortalUser entity)
+        {
+            if (entity.IsFromApi == false && !Boolean.Parse(Engine.Resolve<OrganizationalStructureService>().GetCurrentConfigByName("AllowRegisterUser")))
+            {
+                throw new BusinessException(Engine.Get("NotAllowedChangedBecauseOrgStructConfig"));
+            }
+
+            Validate(entity);
+
+            if (string.IsNullOrEmpty(entity.TempPassword))
+            {
+                var authProvider = (EPortalAuthProvider)Enum.Parse(typeof(EPortalAuthProvider), Engine.AppSettings["auth-provider"]);
+
+                if (authProvider == EPortalAuthProvider.Native)
+                {
+                    throw new BusinessException(entity.DefaultRequiredMessage(e => e.TempPassword));
+                }
+            }
+        }
+
+        public override long Insert(PortalUser entity)
+        {
+            if (entity.IsFromApi == false)
+            {
+                ValidatePassword(entity.Password);
+            }
+
+            if (entity.DefaultOrgStructure == null && entity.OrganizationalStructures != null)
+            {
+                entity.DefaultOrgStructure = entity.OrganizationalStructures.FirstOrDefault();
+            }
+
+            ValidadeInsert(entity);
+
+            if (entity.IsFromApi == false)
+            {
+                orgStructBasedService.LinkOwnerOrgStruct(entity);
+            }
+            else
+            {
+                entity.OwnerOrgStruct = Engine.Resolve<IHubCurrentOrganizationStructure>().GetCurrentRoot();
+            }
+
+            using (var transaction = _repository.BeginTransaction())
+            {
+                entity.Person = Engine.Resolve<PersonService>().SavePerson(entity.Person.Document, entity.Name, entity.OrganizationalStructures.ToList(), entity.OwnerOrgStruct);
+
+                if (string.IsNullOrEmpty(entity.Password)) entity.Password = "voe[it{!@#}t^mp-p@ss]";
+
+                entity.Password = entity.Password.EncodeSHA1();
+                entity.Keyword = Engine.Resolve<UserKeywordService>().GenerateKeyword(entity.Name);
+
+                var ret = _repository.Insert(entity);
+
+                Engine.Resolve<ICrudService<PortalUserSetting>>().Insert(new PortalUserSetting()
+                {
+                    PortalUserId = entity.Id,
+                    Name = "current-organizational-structure",
+                    Value = entity.DefaultOrgStructure.Id.ToString()
+                });
+
+                if (transaction != null) _repository.Commit();
+
+                return ret;
+            }
+        }
+
+        public override void Update(PortalUser entity)
+        {
+            if (string.IsNullOrEmpty(entity.Keyword))
+            {
+                throw new BusinessException(entity.DefaultRequiredMessage(e => e.Keyword));
+            }
+
+            var userKeywordService = Engine.Resolve<UserKeywordService>();
+
+            if (!userKeywordService.IsKeywordValid(entity.Keyword))
+            {
+                throw new BusinessException(Engine.Get("UserKeywordInvalid"));
+            }
+
+            if (userKeywordService.IsKeywordInUse(entity.Id, entity.Keyword))
+            {
+                throw new BusinessException(Engine.Get("UserKeywordInUse"));
+            }
+
+            if (entity.OrganizationalStructures == null || entity.OrganizationalStructures.Count == 0)
+            {
+                throw new BusinessException(Engine.Get("UserOrgStructRequired"));
+            }
+
+            SetUserDefaultOrganizationalStructure(entity);
+
+            entity.OwnerOrgStructId = _repository.Table.Where(x => x.Id == entity.Id).Select(x => x.OwnerOrgStructId).FirstOrDefault();
+
+            if (entity.ChangingPass && !string.IsNullOrEmpty(entity.Password))
+            {
+                entity.Password = entity.Password.EncodeSHA1();
+            }
+            else if (string.IsNullOrEmpty(entity.Password))
+            {
+                entity.Password = Table.Where(u => u.Id == entity.Id).Select(p => p.Password).First();
+            }
+
+            using (var transaction = base._repository.BeginTransaction())
+            {
+                entity.Person = Engine.Resolve<PersonService>().SavePerson(entity.Person.Document, entity.Name, entity.OrganizationalStructures.ToList());
+
+                base._repository.Update(entity);
+
+                if (entity.ChangingPass)
+                {
+                    InsertPasswordChangeRecord(entity);
+                }
+
+                if (transaction != null) base._repository.Commit();
+            }
+
+            currentOrganizationStructure.UpdateUser(entity.Id);
+        }
+
+        public override void Delete(long id)
+        {
+            using (var transaction = _repository.BeginTransaction())
+            {
+                var entity = GetById(id);
+                _repository.Delete(id);
+
+                if (transaction != null) _repository.Commit();
+            }
+        }
+
+        public void UpdatePassword(PortalUser entity)
+        {
+            entity.TempPassword = null;
+            entity.Password = entity.Password.EncodeSHA1();
+
+            using (var transaction = base._repository.BeginTransaction())
+            {
+                base._repository.Update(entity);
+
+                InsertPasswordChangeRecord(entity);
+
+                if (transaction != null) base._repository.Commit();
+            }
+        }
+
+        public void SetUserDefaultOrganizationalStructure(PortalUser portalUser)
+        {
+            var defaultOrgStructureExists = Engine.Resolve<IRepository<PortalUser>>().Table.Where(w => w.Id == portalUser.Id).Any(w => portalUser.OrganizationalStructures.Contains(w.DefaultOrgStructure));
+
+            if (!defaultOrgStructureExists)
+            {
+                portalUser.DefaultOrgStructure = portalUser.OrganizationalStructures.FirstOrDefault();
+            }
+        }
+
+        public PortalUser ResetPassword(string document, string newPassword)
+        {
+            var user = Table.FirstOrDefault(u => u.Person.Document.Equals(document));
+
+            if (user != null && !string.IsNullOrEmpty(newPassword))
+            {
+                user.TempPassword = newPassword;
+                user.LastPasswordRecoverRequestDate = DateTime.Now;
+
+                _repository.Update(user);
+
+                return user;
+            }
+
+            return null;
+        }
+
+        public List<long> GetCurrentUserOrgList(PortalUser currentUser = null)
+        {
+            long? userId = (currentUser != null) ? currentUser.Id : GetCurrentId();
+
+            if (userId == null) return null;
+
+            var userOrgList = redisService.Get($"UserOrgList{userId}").ToString();
+
+            if (string.IsNullOrEmpty(userOrgList))
+            {
+                var list = Table.Where(c => c.Id == userId).SelectMany(o => o.OrganizationalStructures).Select(o => o.Id).ToList();
+
+                redisService.Set($"UserOrgList{userId}", JsonConvert.SerializeObject(list), TimeSpan.FromHours(4));
+
+                return list;
+            }
+            else
+            {
+                return JsonConvert.DeserializeObject<List<long>>(userOrgList);
+            }
+        }
+
+        public PortalUser CreateTempPassword(string userName)
+        {
+            var user = base.Table.FirstOrDefault(u => u.Login == userName);
+
+            if (user != null)
+            {
+                user.TempPassword = PasswordGeneration.Generate(6, 1);
+                user.LastPasswordRecoverRequestDate = DateTime.Now;
+
+                Update(user);
+
+                return user;
+            }
+
+            return null;
+        }
+
+        public void SetCurrentUser(string token)
+        {
+            CurrentUserContext.Value.AuthToken = token;
+        }
+
+        public List<string> GetAuthorizedRoles(List<string> roles)
+        {
+
+            var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+            var profile = new List<string>();
+
+            if (!string.IsNullOrEmpty(authCookie))
+            {
+                var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERPROFILEID);
+
+                if (!string.IsNullOrWhiteSpace(claim?.Value))
+                {
+                    var profileId = long.Parse(claim.Value);
+
+                    var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+                    profile = profileGroupService.GetAppProfileRoles(profileId).ToList();
+                }
+
+            }
+            else if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
+            {
+                var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+                profile = profileGroupService.GetAppProfileRoles(1).ToList();
+            }
+
+            var values = new List<string>();
+            roles.ForEach(role =>
+            {
+                if (profile.Any(r => r == role || r == "ADMIN"))
+                    values.Add(role);
+            });
+
+            return values;
+        }
+
+        public bool Authorize(string role)
+        {
+            var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+            if (authCookie != null && string.IsNullOrEmpty(authCookie) == false)
+            {
+                var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERPROFILEID);
+                var portalUserId = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERID);
+
+                if (!string.IsNullOrWhiteSpace(portalUserId?.Value))
+                {
+                    var cacheKey = $"UpdatedUserAccess{portalUserId.Value}";
+                    var redisService = Engine.Resolve<IRedisService>();
+
+                    var userToRevoke = redisService.Get(cacheKey).ToString();
+
+                    if (!string.IsNullOrWhiteSpace(userToRevoke))
+                    {
+                        CookieExtensions.CleanCookies();
+                        redisService.Delete(cacheKey);
+
+                        return false;
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(claim?.Value))
+                {
+                    var profileId = long.Parse(claim.Value);
+
+                    var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+
+                    return profileGroupService.GetAppProfileRoles(profileId).Any(r => r == role || r == "ADMIN");
+                }
+            }
+
+            if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
+            {
+                var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+
+                return profileGroupService.GetAppProfileRoles(1).Any(r => r == role || r == "ADMIN");
+            }
+
+            return false;
+        }
+
+        public IUserAccount GetCurrent()
+        {
+            try
+            {
+                if (Singleton<OrganizationalHandler>.Instance?.RunningInTestScope ?? false)
+                {
+                    if (Singleton<OrganizationalScopeManager>.Instance.CurrentUser != null)
+                    {
+                        return GetById(Singleton<OrganizationalScopeManager>.Instance.CurrentUser.Value);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
+
+                var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+                if (!string.IsNullOrEmpty(authCookie))
+                {
+                    var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                    accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                    var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERID);
+
+                    if (!string.IsNullOrWhiteSpace(claim?.Value))
+                    {
+                        var userId = long.Parse(claim.Value);
+
+                        return GetById(userId);
+                    }
+                }
+
+                if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
+                {
+                    return GetById(1);
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+#if DEBUG
+                return _repository.Table.FirstOrDefault();
+#endif
+                return null;
+            }
+        }
+
+        public long? GetCurrentId()
+        {
+            if (Singleton<OrganizationalHandler>.Instance?.RunningInTestScope ?? false)
+            {
+                return Singleton<OrganizationalScopeManager>.Instance.CurrentUser;
+            }
+
+            if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
+
+            var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+            if (!string.IsNullOrEmpty(authCookie))
+            {
+                var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERID);
+
+                if (!string.IsNullOrWhiteSpace(claim?.Value))
+                {
+                    var userId = long.Parse(claim.Value);
+
+                    return userId;
+                }
+            }
+
+            if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"] ?? "false"))
+            {
+                return 1;
+            }
+
+            return null;
+        }
+
+        public IProfileGroup GetCurrentProfile()
+        {
+            try
+            {
+                if (Singleton<OrganizationalHandler>.Instance?.RunningInTestScope ?? false)
+                {
+                    if (Singleton<OrganizationalScopeManager>.Instance.CurrentUser != null)
+                    {
+                        var userId = Singleton<OrganizationalScopeManager>.Instance.CurrentUser.Value;
+
+                        return Table.Where(u => u.Id == userId).Select(u => u.Profile).FirstOrDefault();
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
+
+                var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+                if (!string.IsNullOrEmpty(authCookie))
+                {
+                    var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                    accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                    var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERPROFILEID);
+
+                    if (!string.IsNullOrWhiteSpace(claim?.Value))
+                    {
+                        var profileId = long.Parse(claim.Value);
+
+                        return Engine.Resolve<IRepository<ProfileGroup>>().GetById(profileId);
+                    }
+                }
+
+                if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
+                {
+                    return Engine.Resolve<IRepository<ProfileGroup>>().GetById(1);
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+#if DEBUG
+                return _repository.Table.FirstOrDefault().Profile;
+#endif
+                throw;
+            }
+        }
+
+        public long? GetCurrentProfileId()
+        {
+            try
+            {
+                if (Singleton<OrganizationalHandler>.Instance?.RunningInTestScope ?? false)
+                {
+                    if (Singleton<OrganizationalScopeManager>.Instance.CurrentUser != null)
+                    {
+                        return GetById(Singleton<OrganizationalScopeManager>.Instance.CurrentUser.Value).Profile.Id;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
+
+                var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
+
+                if (!string.IsNullOrEmpty(authCookie))
+                {
+                    var tokenResult = accessTokenProvider.ValidateToken(authCookie);
+
+                    accessTokenProvider.ValidateTokenStatus(tokenResult);
+
+                    var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERPROFILEID);
+
+                    if (!string.IsNullOrWhiteSpace(claim?.Value))
+                    {
+                        var profileId = long.Parse(claim.Value);
+
+                        return profileId;
+                    }
+                }
+
+                if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
+                {
+                    return 1;
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+#if DEBUG
+                return 1;
+#endif
+                throw;
+            }
+        }
+
+        public override PortalUser GetById(long id)
+        {
+            var user = Engine.Resolve<IRepository<PortalUser>>().Table.Include(u => u.Profile).FirstOrDefault(u => u.Id == id);
+            return user;
+        }
+
+        public void ValidatePassword(string password)
+        {
+            if (!string.IsNullOrEmpty(password))
+            {
+                if (password.Length < 8 || password.Length > 30 || Regex.Match(password, @"\d+").Success == false || Regex.Match(password, @"[a-z]").Success == false || Regex.Match(password, @"[A-Z]").Success == false || password.All(c => Char.IsLetterOrDigit(c)) == true)
+                {
+                    throw new BusinessException(Engine.Get("PasswordToWeak"));
+                }
+            }
+        }
+
+        public async Task<byte[]> GenerateQRCode(string qrCodeInfo, string logo = null)
+        {
+            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+            {
+                using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrCodeInfo, QRCodeGenerator.ECCLevel.Q))
+                {
+                    using (var qrCode = new QRCode(qrCodeData))
+                    {
+                        Bitmap qrCodeImage = qrCode.GetGraphic(13);
+
+                        if (!string.IsNullOrEmpty(logo))
+                        {
+                            if (logo.StartsWith("~/"))
+                            {
+                                logo = logo.Substring(2);
+
+                                qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Bitmap.FromFile(logo));
+                            }
+
+                            if (logo.Contains("http"))
+                            {
+                                var request = (HttpWebRequest)WebRequest.Create(logo);
+                                request.Method = "GET";
+
+                                using (HttpClient httpClient = new HttpClient())
+                                {
+                                    using (HttpResponseMessage response = await httpClient.GetAsync(logo))
+                                    {
+                                        if (response.IsSuccessStatusCode)
+                                        {
+                                            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
+                                            {
+                                                qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Image.FromStream(responseStream));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        using (var stream = new MemoryStream())
+                        {
+                            qrCodeImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+
+                            return stream.ToArray();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Método responsável por inativar todos os usuários que possuam data de expiração
+        /// e que esta data seja igual ou inferior à data atual
+        /// <see cref=">https://dev.azure.com/evuptec/Kanban%20EL/_workitems/edit/24571"/> Link da Feature
+        /// </summary>
+        public void InactivateExpiredUsers()
+        {
+            var userExpiredList = Table.Where(w => w.ExpirationDate.Value.Date <= DateTime.Now.Date).ToList();
+
+            foreach (var userExpired in userExpiredList)
+            {
+                userExpired.ExpirationDate = null;
+                userExpired.Inactive = true;
+                Update(userExpired);
+            }
+        }
+
+        #region PRIVATE METHODS 
 
         private void Validate(PortalUser entity)
         {
@@ -102,287 +695,45 @@ namespace Hub.Application.Services
             }
         }
 
-        public PortalUser ResetPassword(string document, string newPassword)
+        private void InsertPasswordChangeRecord(PortalUser entity)
         {
-            var user = Table.FirstOrDefault(u => u.Person.Document.Equals(document));
-
-            if (user != null && !string.IsNullOrEmpty(newPassword))
+            var passwordExpirationDays = Engine.Resolve<ProfileGroupService>().Get(w => w.Id == entity.Profile.Id, s => s.PasswordExpirationDays).FirstOrDefault();
+            var passHistory = new PortalUserPassHistory
             {
-                user.TempPassword = newPassword;
-                user.LastPasswordRecoverRequestDate = DateTime.Now;
+                PortalUserId = entity.Id,
+                PortalUser = entity,
+                CreationUTC = DateTime.UtcNow,
+                Password = entity.Password
+            };
 
-                _repository.Update(user);
-
-                return user;
+            if (passwordExpirationDays != EPasswordExpirationDays.Off)
+            {
+                passHistory.ExpirationUTC = passHistory.CreationUTC.AddDays((double)passwordExpirationDays);
             }
 
-            return null;
+            Engine.Resolve<PortalUserPassHistoryService>().Insert(passHistory);
         }
 
-        public override void Delete(long id)
+        /// <summary>
+        /// Método responsável por registrar o acesso do usuário no portal
+        /// </summary>
+        public void RegisterAccess(long? userId = null)
         {
-            using (var transaction = _repository.BeginTransaction())
-            {
-                var entity = GetById(id);
-                _repository.Delete(id);
+            long? currentUserId = userId;
 
-                if (transaction != null) _repository.Commit();
+            if (currentUserId == null)
+            {
+                currentUserId = Engine.Resolve<ISecurityProvider>().GetCurrentId();
             }
+
+            PortalUser user = GetById(currentUserId.Value);
+            user.LastAccessDate = DateTime.Now;
+            user.LastUpdateUTC = DateTime.UtcNow;
+
+            Update(user);
         }
 
-        public PortalUser CreateTempPassword(string userName)
-        {
-            var user = base.Table.FirstOrDefault(u => u.Login == userName);
-
-            if (user != null)
-            {
-                user.TempPassword = PasswordGeneration.Generate(6, 1);
-                user.LastPasswordRecoverRequestDate = DateTime.Now;
-
-                Update(user);
-
-                return user;
-            }
-
-            return null;
-        }
-
-        public void SetCurrentUser(string token)
-        {
-            CurrentUserContext.Value.AuthToken = token;
-        }
-
-        public IUserAccount GetCurrent()
-        {
-            try
-            {
-                if (CurrentUserContext.Value?.CurrentUserId != null)
-                {
-                    var userId = CurrentUserContext.Value?.CurrentUserId;
-                    return GetById(userId.Value);
-                }
-                else
-                {
-                    if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
-
-                    var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
-
-                    if (!string.IsNullOrEmpty(authCookie))
-                    {
-                        var tokenResult = accessTokenProvider.ValidateToken(authCookie);
-
-                        accessTokenProvider.ValidateTokenStatus(tokenResult);
-
-                        var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERID);
-
-                        if (!string.IsNullOrWhiteSpace(claim?.Value))
-                        {
-                            var userId = long.Parse(claim.Value);
-
-                            return GetById(userId);
-                        }
-                    }
-
-                    if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
-                    {
-                        return GetById(1);
-                    }
-
-                    return null;
-                }
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        public long? GetCurrentId()
-        {
-            if (CurrentUserContext.Value?.CurrentUserId != null)
-            {
-                return CurrentUserContext.Value?.CurrentUserId;
-            }
-            else
-            {
-                if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
-
-                var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
-
-                if (!string.IsNullOrEmpty(authCookie))
-                {
-                    var tokenResult = accessTokenProvider.ValidateToken(authCookie);
-
-                    accessTokenProvider.ValidateTokenStatus(tokenResult);
-
-                    var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERID);
-
-                    if (!string.IsNullOrWhiteSpace(claim?.Value))
-                    {
-                        var userId = long.Parse(claim.Value);
-
-                        return userId;
-                    }
-                }
-
-                if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"] ?? "false"))
-                {
-                    return 1;
-                }
-
-                return null;
-            }
-        }
-
-        public long? GetCurrentProfileId()
-        {
-            try
-            {
-                if (CurrentUserContext.Value?.CurrentUserId != null)
-                {
-                    var userId = CurrentUserContext.Value?.CurrentUserId;
-                    return Table.Where(u => u.Id == userId).Select(u => u.Profile.Id).FirstOrDefault();
-                }
-                else
-                {
-                    if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
-
-                    var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
-
-                    if (!string.IsNullOrEmpty(authCookie))
-                    {
-                        var tokenResult = accessTokenProvider.ValidateToken(authCookie);
-
-                        accessTokenProvider.ValidateTokenStatus(tokenResult);
-
-                        var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERPROFILEID);
-
-                        if (!string.IsNullOrWhiteSpace(claim?.Value))
-                        {
-                            var profileId = long.Parse(claim.Value);
-
-                            return profileId;
-                        }
-                    }
-
-                    if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
-                    {
-                        return 1;
-                    }
-
-                    return null;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public IProfileGroup GetCurrentProfile()
-        {
-            try
-            {
-                if (CurrentUserContext.Value?.CurrentUserId != null)
-                {
-                    var userId = CurrentUserContext.Value?.CurrentUserId;
-
-                    return Table.Where(u => u.Id == userId).Select(u => u.Profile).FirstOrDefault();
-                }
-                else
-                {
-                    if (HttpContextHelper.Current == null || HttpContextHelper.Current.Request == null) return null;
-
-                    var authCookie = HttpContextHelper.Current.Request.Cookies["Authentication"];
-
-                    if (!string.IsNullOrEmpty(authCookie))
-                    {
-                        var tokenResult = accessTokenProvider.ValidateToken(authCookie);
-
-                        accessTokenProvider.ValidateTokenStatus(tokenResult);
-
-                        var claim = accessTokenProvider.RetriveTokenData(tokenResult, TOKEN_KEY_USERPROFILEID);
-
-                        if (!string.IsNullOrWhiteSpace(claim?.Value))
-                        {
-                            var profileId = long.Parse(claim.Value);
-
-                            return Engine.Resolve<IRepository<ProfileGroup>>().GetById(profileId);
-                        }
-                    }
-
-                    if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
-                    {
-                        return Engine.Resolve<IRepository<ProfileGroup>>().GetById(1);
-                    }
-
-                    return null;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-
-        public override PortalUser GetById(long id)
-        {
-            var user = Engine.Resolve<IRepository<PortalUser>>().Table.Include(u => u.Profile).FirstOrDefault(u => u.Id == id);
-            return user;
-        }
-
-        public async Task<byte[]> GenerateQRCode(string qrCodeInfo, string logo = null)
-        {
-            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-            {
-                using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrCodeInfo, QRCodeGenerator.ECCLevel.Q))
-                {
-                    using (var qrCode = new QRCode(qrCodeData))
-                    {
-                        Bitmap qrCodeImage = qrCode.GetGraphic(13);
-
-                        if (!string.IsNullOrEmpty(logo))
-                        {
-                            if (logo.StartsWith("~/"))
-                            {
-                                logo = logo.Substring(2);
-
-                                qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Bitmap.FromFile(logo));
-                            }
-
-                            if (logo.Contains("http"))
-                            {
-                                var request = (HttpWebRequest)WebRequest.Create(logo);
-                                request.Method = "GET";
-
-                                using (HttpClient httpClient = new HttpClient())
-                                {
-                                    using (HttpResponseMessage response = await httpClient.GetAsync(logo))
-                                    {
-                                        if (response.IsSuccessStatusCode)
-                                        {
-                                            using (Stream responseStream = await response.Content.ReadAsStreamAsync())
-                                            {
-                                                qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Image.FromStream(responseStream));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        using (var stream = new MemoryStream())
-                        {
-                            qrCodeImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-
-                            return stream.ToArray();
-                        }
-                    }
-                }
-            }
-        }
-
+        #endregion
 
         #region AUTHENTICATION  
 

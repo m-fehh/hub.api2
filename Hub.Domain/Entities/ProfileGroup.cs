@@ -1,7 +1,8 @@
-﻿using Hub.Domain.Entities.OrgStructure;
+﻿using Hub.Domain.Enums;
 using Hub.Infrastructure.Architecture.Logger.Interfaces;
 using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
+using Hub.Infrastructure.Database.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,6 +11,11 @@ namespace Hub.Domain.Entities
     [Table("ProfileGroup")]
     public class ProfileGroup : BaseEntity, IProfileGroup, ILogableEntity
     {
+        public ProfileGroup()
+        {
+            PasswordExpirationDays = EPasswordExpirationDays.Ninety;
+        }
+
         [Key]
         public override long Id { get; set; }
 
@@ -27,6 +33,8 @@ namespace Hub.Domain.Entities
 
         [Required]
         public virtual bool Administrator { get; set; }
+
+        public virtual EPasswordExpirationDays PasswordExpirationDays { get; set; }
 
         [Required]
         public virtual bool AllowMultipleAccess { get; set; }

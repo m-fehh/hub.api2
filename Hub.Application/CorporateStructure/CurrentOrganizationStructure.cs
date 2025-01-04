@@ -1,6 +1,4 @@
-﻿using Hub.Domain.Entities.OrgStructure;
-using Hub.Domain.Entities;
-using Hub.Domain.Enums;
+﻿using Hub.Domain.Enums;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.Cache;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
@@ -11,19 +9,12 @@ using Hub.Infrastructure.Web.Interfaces;
 using Hub.Infrastructure.Web;
 using Newtonsoft.Json;
 using Hub.Application.Services;
+using Hub.Domain.Entities.Users;
+using Hub.Application.CorporateStructure.Interfaces;
+using Hub.Infrastructure.Database.Models;
 
 namespace Hub.Application.CorporateStructure
 {
-    public interface IHubCurrentOrganizationStructure
-    {
-        string GetCurrentDomain(string structId = null);
-        OrganizationalStructure GetCurrentRoot();
-        long? GetCurrentRootId();
-        string Get();
-        void Set(string id);
-        void SetCookieRequest(string id);
-    }
-
     public class HubCurrentOrganizationStructure : IHubCurrentOrganizationStructure
     {
         public void Set(string id)

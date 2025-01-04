@@ -1,7 +1,9 @@
 ﻿using Hub.Domain.Entities;
 using Hub.Domain.Entities.Logs;
 using Hub.Domain.Entities.OrgStructure;
+using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Database.Interfaces;
+using Hub.Infrastructure.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -19,13 +21,15 @@ public class EntityDbContext : DbContext
 
     public DbSet<AccessRule> AccessRules { get; set; } = null!;
 
+    #endregion
+
+    #region ORG STRUCTURE
+
     public DbSet<OrganizationalStructure> OrganizationalStructures { get; set; } = null!;
 
     public DbSet<OrganizationalStructureConfig> OrganizationalStructureConfigs { get; set; } = null!;
 
     public DbSet<OrgStructConfigDefault> OrgStructConfigDefaults { get; set; } = null!;
-
-    
 
     #endregion
 
@@ -37,7 +41,11 @@ public class EntityDbContext : DbContext
 
     public DbSet<PortalUserFingerprint> PortalUserFingerprints { get; set; } = null!; 
 
+    public DbSet<PortalUserSetting> PortalUserSettings { get; set; } = null!; 
+
     public DbSet<Person> Persons { get; set; } = null!;
+
+    public DbSet<UserRole> UserRoles { get; set; } = null!;
 
     #endregion
 

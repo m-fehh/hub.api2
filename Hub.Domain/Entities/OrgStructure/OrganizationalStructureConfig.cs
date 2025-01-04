@@ -2,6 +2,7 @@
 using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Hub.Infrastructure.Database.Models;
 
 namespace Hub.Domain.Entities.OrgStructure
 {
@@ -15,6 +16,11 @@ namespace Hub.Domain.Entities.OrgStructure
 
         [ForeignKey(nameof(OrganizationalStructureId))]
         public virtual OrganizationalStructure OrganizationalStructure { get; set; }
+
+        public virtual long OrgStructConfigDefaultId { get; set; }
+
+        [ForeignKey(nameof(OrgStructConfigDefaultId))]
+        public virtual OrgStructConfigDefault Config { get; set; }
 
         [Required]
         [StringLength(300)]
