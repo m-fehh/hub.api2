@@ -11,7 +11,7 @@ using Hub.Infrastructure.Architecture.Security.Interfaces;
 
 namespace Hub.Application.Services
 {
-    public class ProfileGroupService : CrudService<ProfileGroup>
+    public class ProfileGroupService : OrchestratorService<ProfileGroup>
     {
         private readonly ISecurityProvider _securityProvider;
 

@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace Hub.Infrastructure.Database.Services
 {
-    public class TenantService : CrudService<Tenant>
+    public class TenantService : OrchestratorService<Tenant>
     {
         public TenantService(IRepository<Tenant> repository) : base(repository) { }
 

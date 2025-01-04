@@ -31,7 +31,7 @@ namespace Hub.Application.CorporateStructure
         {
             var redisService = Engine.Resolve<IRedisService>();
 
-            var list = Engine.Resolve<ICrudService<PortalUser>>().Table.Where(c => c.Id == userid).SelectMany(c => c.OrganizationalStructures).Select(o => o.Id).ToList();
+            var list = Engine.Resolve<IOrchestratorService<PortalUser>>().Table.Where(c => c.Id == userid).SelectMany(c => c.OrganizationalStructures).Select(o => o.Id).ToList();
 
             redisService.Set($"UserOrgList{userid}", JsonConvert.SerializeObject(list));
 
@@ -164,7 +164,7 @@ namespace Hub.Application.CorporateStructure
 
         private string GetCurrentDomainFromDb(string structId = null)
         {
-            var structService = Engine.Resolve<ICrudService<OrganizationalStructure>>();
+            var structService = Engine.Resolve<IOrchestratorService<OrganizationalStructure>>();
             var longStructId = long.Parse(structId);
 
             var structure = structService.Table.Where(o => o.Id == longStructId).Select(o => new { o.IsDomain, FatherId = (long?)o.Father.Id }).FirstOrDefault();

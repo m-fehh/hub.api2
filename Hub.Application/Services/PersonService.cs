@@ -7,7 +7,7 @@ using Hub.Infrastructure.Web;
 
 namespace Hub.Application.Services
 {
-    public class PersonService : CrudService<Person>
+    public class PersonService : OrchestratorService<Person>
     {
         public PersonService(IRepository<Person> repository) : base(repository) { }
 

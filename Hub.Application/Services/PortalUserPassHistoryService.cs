@@ -4,7 +4,7 @@ using Hub.Infrastructure.Web;
 
 namespace Hub.Application.Services
 {
-    public class PortalUserPassHistoryService : CrudService<PortalUserPassHistory>
+    public class PortalUserPassHistoryService : OrchestratorService<PortalUserPassHistory>
     {
         public PortalUserPassHistoryService(IRepository<PortalUserPassHistory> repository) : base(repository) { }
 

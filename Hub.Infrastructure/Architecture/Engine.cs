@@ -566,10 +566,10 @@ using Autofac.Core;
 using Hub.Infrastructure.Helpers;
 using Hub.Infrastructure.Database;
 using Hub.Infrastructure.Architecture.Localization.Interfaces;
-using Hub.Infrastructure.Architecture.Mapper;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 using System.Threading.Tasks;
 using Hub.Infrastructure.Architecture.Tasks;
+using Hub.Infrastructure.Architecture.Mapper.Interfaces;
 
 namespace Hub.Infrastructure.Architecture
 {

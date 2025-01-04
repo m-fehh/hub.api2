@@ -27,34 +27,34 @@ namespace Hub.Application.Configurations
 
             #region SERVICES TENANTS
 
-            builder.RegisterType<DocumentTypeService>().As<ICrudService<DocumentType>>();
+            builder.RegisterType<DocumentTypeService>().As<IOrchestratorService<DocumentType>>();
             builder.RegisterType<DocumentTypeService>().AsSelf();
 
-            builder.RegisterType<PortalUserFingerprintService>().As<ICrudService<PortalUserFingerprint>>();
+            builder.RegisterType<PortalUserFingerprintService>().As<IOrchestratorService<PortalUserFingerprint>>();
             builder.RegisterType<PortalUserFingerprintService>().AsSelf();
 
-            builder.RegisterType<PortalUserPassHistoryService>().As<ICrudService<PortalUserPassHistory>>().AsSelf();
+            builder.RegisterType<PortalUserPassHistoryService>().As<IOrchestratorService<PortalUserPassHistory>>().AsSelf();
             builder.RegisterType<PortalUserPassHistoryService>().AsSelf();
 
-            builder.RegisterType<AccessRuleService>().As<ICrudService<AccessRule>>();
+            builder.RegisterType<AccessRuleService>().As<IOrchestratorService<AccessRule>>();
             builder.RegisterType<AccessRuleService>().AsSelf();
 
             builder.RegisterType<UserProfileControlAccessService>().As<IUserProfileControlAccessService>();
             builder.RegisterType<UserProfileControlAccessService>().AsSelf();
 
-            builder.RegisterType<UserService>().As<ICrudService<PortalUser>>().As<ISecurityProvider>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<UserService>().As<IOrchestratorService<PortalUser>>().As<ISecurityProvider>().AsSelf().InstancePerLifetimeScope();
 
             builder.RegisterType<LoginService>().AsSelf();
 
             builder.RegisterType<UserKeywordService>().AsSelf();
 
-            builder.RegisterType<PortalUserSettingService>().As<ICrudService<PortalUserSetting>>();
+            builder.RegisterType<PortalUserSettingService>().As<IOrchestratorService<PortalUserSetting>>();
             builder.RegisterType<PortalUserSettingService>().As<IUserSettingManager>();
 
-            builder.RegisterType<ProfileGroupService>().As<ICrudService<ProfileGroup>>();
+            builder.RegisterType<ProfileGroupService>().As<IOrchestratorService<ProfileGroup>>();
             builder.RegisterType<ProfileGroupService>().AsSelf();
 
-            builder.RegisterType<OrganizationalStructureService>().As<ICrudService<OrganizationalStructure>>();
+            builder.RegisterType<OrganizationalStructureService>().As<IOrchestratorService<OrganizationalStructure>>();
             builder.RegisterType<OrganizationalStructureService>().AsSelf();
             builder.RegisterType<OrganizationalStructureService>().As<IOrgStructBasedService>();
             builder.RegisterType<OrganizationalStructureService>().As<IOrganizationalStructureService>();

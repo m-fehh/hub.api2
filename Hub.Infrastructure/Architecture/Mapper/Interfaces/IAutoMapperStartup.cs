@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 
-namespace Hub.Infrastructure.Architecture.Mapper
+namespace Hub.Infrastructure.Architecture.Mapper.Interfaces
 {
     public interface IAutoMapperStartup
     {

@@ -31,7 +31,7 @@ using Hub.Application.Models.ViewModels.Auth;
 
 namespace Hub.Application.Services
 {
-    public class UserService : CrudService<PortalUser>, ISecurityProvider
+    public class UserService : OrchestratorService<PortalUser>, ISecurityProvider
     {
         public static AsyncLocal<UserContext> CurrentUserContext = new AsyncLocal<UserContext>();
         private const string TOKEN_KEY_USERID = ClaimTypes.NameIdentifier;
@@ -106,7 +106,7 @@ namespace Hub.Application.Services
 
                 var ret = _repository.Insert(entity);
 
-                Engine.Resolve<ICrudService<PortalUserSetting>>().Insert(new PortalUserSetting()
+                Engine.Resolve<IOrchestratorService<PortalUserSetting>>().Insert(new PortalUserSetting()
                 {
                     PortalUserId = entity.Id,
                     Name = "current-organizational-structure",
@@ -289,14 +289,14 @@ namespace Hub.Application.Services
                 {
                     var profileId = long.Parse(claim.Value);
 
-                    var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+                    var profileGroupService = (ProfileGroupService)Engine.Resolve<IOrchestratorService<ProfileGroup>>();
                     profile = profileGroupService.GetAppProfileRoles(profileId).ToList();
                 }
 
             }
             else if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
             {
-                var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+                var profileGroupService = (ProfileGroupService)Engine.Resolve<IOrchestratorService<ProfileGroup>>();
                 profile = profileGroupService.GetAppProfileRoles(1).ToList();
             }
 
@@ -343,7 +343,7 @@ namespace Hub.Application.Services
                 {
                     var profileId = long.Parse(claim.Value);
 
-                    var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+                    var profileGroupService = (ProfileGroupService)Engine.Resolve<IOrchestratorService<ProfileGroup>>();
 
                     return profileGroupService.GetAppProfileRoles(profileId).Any(r => r == role || r == "ADMIN");
                 }
@@ -351,7 +351,7 @@ namespace Hub.Application.Services
 
             if (bool.Parse(Engine.AppSettings["EnableAnonymousLogin"]))
             {
-                var profileGroupService = (ProfileGroupService)Engine.Resolve<ICrudService<ProfileGroup>>();
+                var profileGroupService = (ProfileGroupService)Engine.Resolve<IOrchestratorService<ProfileGroup>>();
 
                 return profileGroupService.GetAppProfileRoles(1).Any(r => r == role || r == "ADMIN");
             }
@@ -765,7 +765,7 @@ namespace Hub.Application.Services
                     var userEmailClaim = userJwtTokenKeys.UserEmail;
                     var userDocClaim = userJwtTokenKeys.UserDoc;
 
-                    var portalUserTable = Engine.Resolve<ICrudService<PortalUser>>().Table;
+                    var portalUserTable = Engine.Resolve<IOrchestratorService<PortalUser>>().Table;
 
                     if (currentUser == null && string.IsNullOrWhiteSpace(userIdClaim) == false)
                     {

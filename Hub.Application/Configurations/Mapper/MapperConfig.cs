@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Hub.Application.Models.ViewModels;
 using Hub.Domain.Entities;
-using Hub.Infrastructure.Architecture.Mapper;
+using Hub.Infrastructure.Architecture.Mapper.Interfaces;
 
 namespace Hub.Application.Configurations.Mapper
 {

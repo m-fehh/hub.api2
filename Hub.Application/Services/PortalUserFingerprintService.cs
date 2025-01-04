@@ -8,7 +8,7 @@ namespace Hub.Application.Services
     /// Serviço para armazenar informações diversas no momento do login
     /// <see href="https://dev.azure.com/evuptec/EVUP/_workitems/edit/17365/">Link do PBI</see>
     /// </summary>
-    public class PortalUserFingerprintService : CrudServiceDefault<PortalUserFingerprint>
+    public class PortalUserFingerprintService : OrchestratorSimpleService<PortalUserFingerprint>
     {
         public PortalUserFingerprintService(IRepository<PortalUserFingerprint> repository) : base(repository) { }
     }

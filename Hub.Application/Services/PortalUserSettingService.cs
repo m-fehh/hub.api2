@@ -8,7 +8,7 @@ using Hub.Infrastructure.Architecture.Localization;
 
 namespace Hub.Application.Services
 {
-    public class PortalUserSettingService : CrudService<PortalUserSetting>, IUserSettingManager
+    public class PortalUserSettingService : OrchestratorService<PortalUserSetting>, IUserSettingManager
     {
         public PortalUserSettingService(IRepository<PortalUserSetting> repository) : base(repository) { }
 

@@ -58,7 +58,7 @@ namespace Hub.Application.Services
                 throw new BusinessException(Engine.Get("PasswordExpired"));
             }
 
-            Engine.Resolve<UserService>().RegisterAccess(user.Id);
+            //Engine.Resolve<UserService>().RegisterAccess(user.Id);
 
             return CreateTokenForUser(user);
         }

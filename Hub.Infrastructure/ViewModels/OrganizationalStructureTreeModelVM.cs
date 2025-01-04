@@ -1,4 +1,4 @@
-﻿namespace Hub.Application.Models.ViewModels
+﻿namespace Hub.Infrastructure.ViewModels
 {
     public class OrganizationalStructureTreeModelVM
     {

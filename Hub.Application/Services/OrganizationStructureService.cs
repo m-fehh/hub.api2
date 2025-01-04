@@ -17,7 +17,7 @@ using Hub.Infrastructure.Database.Models;
 
 namespace Hub.Application.Services
 {
-    public class OrganizationalStructureService : CrudService<OrganizationalStructure>, IOrganizationalStructureService
+    public class OrganizationalStructureService : OrchestratorService<OrganizationalStructure>, IOrganizationalStructureService
     {
         private static object locker = new object();
         private static long? currentOrgStructureIfNull;

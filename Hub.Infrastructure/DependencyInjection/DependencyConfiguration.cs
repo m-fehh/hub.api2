@@ -68,7 +68,7 @@ namespace Hub.Infrastructure.DependencyInjection
 
             #region SERVICES ADMIN
 
-            builder.RegisterType<TenantService>().As<ICrudService<Tenant>>().AsSelf();
+            builder.RegisterType<TenantService>().As<IOrchestratorService<Tenant>>().AsSelf();
             builder.RegisterType<TenantService>().AsSelf();
 
             #endregion
