@@ -1,15 +1,25 @@
-﻿using Hub.Domain.Entities.Users;
+﻿using Hub.Application.Models.ViewModels.Auth;
+using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.OAuth.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
 using Hub.Infrastructure.Extensions;
+using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace Hub.Application.Services
 {
     public class LoginService
     {
+        private readonly IAccessTokenProvider _tokenService;
+
+        public LoginService(IAccessTokenProvider tokenService)
+        {
+            _tokenService = tokenService;
+        }
+
         public string AuthenticateUser(LoginVM model)
         {
             if (string.IsNullOrEmpty(model.Username))
@@ -41,53 +51,46 @@ namespace Hub.Application.Services
                 throw new BusinessException(Engine.Get("UserInactive"));
             }
 
+            var lastChangePassword = Engine.Resolve<IRepository<PortalUserPassHistory>>().Table.Where(x => x.PortalUserId == user.Id).Select(x => x.ExpirationUTC).FirstOrDefault();
 
-            user.LastAccessDate = DateTime.Now;
-            Engine.Resolve<IRepository<PortalUser>>().Update(user);
-
-            return CreateTokenForUser(new LoginResponseVM
+            if (lastChangePassword.HasValue && lastChangePassword.Value < DateTime.UtcNow)
             {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                ProfileId = user.ProfileId,
-                Administrator = user.Profile.Administrator,
-                Inactive = user.Inactive
-            });
+                throw new BusinessException(Engine.Get("PasswordExpired"));
+            }
+
+            Engine.Resolve<UserService>().RegisterAccess(user.Id);
+
+            return CreateTokenForUser(user);
         }
 
-        string CreateTokenForUser(LoginResponseVM user)
+        string CreateTokenForUser(PortalUser model)
         {
+
+            var redis = Engine.Resolve<IRedisService>();
+            string cacheKey = $"UpdatedUserAccess{model.Id}";
+
+            var userToRevoke = redis.Get(cacheKey).ToString();
+
+            if (!string.IsNullOrWhiteSpace(userToRevoke))
+            {
+                redis.Delete(cacheKey);
+            }
+
+            redis.Set($"UserOrgList{model.Id}", JsonConvert.SerializeObject(model.OrganizationalStructures), TimeSpan.FromDays(7));
+
             double tokenExpirationTimeInMinutes = double.TryParse(Engine.AppSettings["auth-token-expiration-time"], out var tokenExpirationTime) ? tokenExpirationTime : 180;
 
-            var token = Engine.Resolve<IAccessTokenProvider>().GenerateToken(new List<Claim>
+            var token = _tokenService.GenerateToken(new List<Claim>
                     {
-                        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                        new Claim(ClaimTypes.Name, user.Name),
-                        new Claim(ClaimTypes.Email, user.Email),
-                        new Claim("admin", user.Administrator.ToString()),
-                        new Claim("profileId", user.ProfileId.ToString())
+                        new Claim(ClaimTypes.NameIdentifier, model.Id.ToString()),
+                        new Claim(ClaimTypes.Name, model.Name),
+                        new Claim(ClaimTypes.Email, model.Email),
+                        new Claim("admin", model.Profile?.Administrator.ToString()),
+                        new Claim("profileId", model.ProfileId.ToString()),
+                        new Claim("defaultOrgStructureId", model.DefaultOrgStructureId?.ToString() ?? ""),
                     }, expiryInMinutes: tokenExpirationTimeInMinutes);
 
             return token;
         }
-    }
-
-    public class LoginVM
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
-
-    public class LoginResponseVM
-    {
-        public long? Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public long? ProfileId { get; set; }
-        public bool Administrator { get; set; }
-        public bool Inactive { get; set; }
-        public long? DefaultOrgStructureId { get; set; }
-        public bool AllowMultipleAccess { get; set; }
     }
 }

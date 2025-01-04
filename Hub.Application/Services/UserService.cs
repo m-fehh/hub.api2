@@ -26,6 +26,8 @@ using Hub.Application.CorporateStructure;
 using Hub.Application.CorporateStructure.Interfaces;
 using Hub.Domain.Enums;
 using System.Text.RegularExpressions;
+using Hub.Application.Models.ViewModels;
+using Hub.Application.Models.ViewModels.Auth;
 
 namespace Hub.Application.Services
 {
@@ -727,6 +729,7 @@ namespace Hub.Application.Services
             }
 
             PortalUser user = GetById(currentUserId.Value);
+            user.TempPassword = null;
             user.LastAccessDate = DateTime.Now;
             user.LastUpdateUTC = DateTime.UtcNow;
 
@@ -871,12 +874,12 @@ namespace Hub.Application.Services
                     if (trans != null) _repository.Commit();
                 }
 
-                //Engine.Resolve<LogService>().Audit(new Log.Models.LogAuditVM
-                //{
-                //    ObjectName = Engine.Get("Login"),
-                //    ObjectId = portalUserId,
-                //    Message = request.FingerPrint?.ToString()
-                //});
+                Engine.Resolve<LogService>().Audit(new LogAuditVM
+                {
+                    ObjectName = Engine.Get("Login"),
+                    ObjectId = portalUserId,
+                    Message = request.FingerPrint?.ToString()
+                });
 
                 if (request.Provider == EAuthProvider.Form)
                 {
