@@ -3,8 +3,8 @@ using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
-using Hub.Infrastructure.Web;
 using Hub.Infrastructure.Architecture.Localization;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {

@@ -28,6 +28,7 @@ using Hub.Domain.Enums;
 using System.Text.RegularExpressions;
 using Hub.Application.Models.ViewModels;
 using Hub.Application.Models.ViewModels.Auth;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {
@@ -740,6 +741,43 @@ namespace Hub.Application.Services
 
         #region AUTHENTICATION  
 
+        //public UserAuthVM AuthenticateToken(string token)
+        //{
+        //    var tokenResult = Engine.Resolve<IAccessTokenProvider>().ValidateToken(token);
+
+        //    if (tokenResult.Status != AccessTokenStatus.Valid)
+        //    {
+        //        return null;
+        //    }
+
+        //    var claim = tokenResult.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+
+        //    if (claim == null)
+        //    {
+        //        return null;
+        //    }
+
+        //    var id = long.Parse(claim.Value);
+
+        //    var user = GetById(id);
+
+        //    var orgs = GetCurrentUserOrgList(user);
+
+        //    //var establishments = Engine.Resolve<IRepository<Establishment>>().Table.Where(e => orgs.Contains(e.OrganizationalStructure.Id)).Select(e => e.CNPJ).ToList();
+
+        //    return new UserAuthVM
+        //    {
+        //        Id = user.QrCodeInfo,
+        //        CPF = user.Document,
+        //        Name = user.Name,
+        //        Email = user.Email,
+        //        MobilePhone = user.AreaCode + user.PhoneNumber,
+        //        Inactive = user.Inactive,
+        //        ProfileId = user.Profile.Id,
+        //        ProfileName = user.Profile.Name,
+        //        //Establishments = establishments
+        //    };
+        //}
 
         public void Authenticate(string token)
         {

@@ -40,7 +40,7 @@ namespace Hub.Infrastructure.HealthChecker
                     .AddItem(new CheckerItem<string>(() => Engine.ConnectionString("default"), e => !string.IsNullOrEmpty(e), msgError: Engine.Get("DefaultConnectionMsg")))
                     .AddItem(new CheckerItem<string>(() => Engine.ConnectionString("adm"), e => !string.IsNullOrEmpty(e), msgError: Engine.Get("AdmConnectionMsg")))
                     .AddItem(new CheckerItem<string>(() => Engine.ConnectionString("redis"), e => !string.IsNullOrEmpty(e), msgError: Engine.Get("RedisConnectionMsg")))
-                    .AddItem(new CheckerItem<string>(() => Engine.Resolve<ConnectionStringBaseConfigurator>().Get().ConnectionStringBaseSchema, e => !string.IsNullOrEmpty(e), msgError: Engine.Get("BaseSchemaConnectionMsg")))
+                    .AddItem(new CheckerItem<string>(() => Engine.Resolve<ConnectionStringInitializer>().Get().ConnectionStringBaseSchema, e => !string.IsNullOrEmpty(e), msgError: Engine.Get("BaseSchemaConnectionMsg")))
                     // Database
                     .AddItem(new CheckerItem<string>(() => Engine.ConnectionString("default"), e => Checkers.DbConnectionChecker.CheckSqlServer(e), msgError: Engine.Get("DbConnectionCheckerMsg")))
                     .AddItem(new CheckerItem<string>(() => Engine.ConnectionString("adm"), e => Checkers.DbConnectionChecker.CheckSqlServer(e), msgError: Engine.Get("DbConnectionCheckerMsg")))

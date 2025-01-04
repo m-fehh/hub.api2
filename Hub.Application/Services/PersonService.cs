@@ -3,7 +3,7 @@ using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database.Models;
 using Hub.Infrastructure.Exceptions;
-using Hub.Infrastructure.Web;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {

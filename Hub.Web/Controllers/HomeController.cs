@@ -1,8 +1,8 @@
 using Hub.Application.Services;
 using Hub.Infrastructure.Architecture.Cache;
 using Hub.Infrastructure.Architecture;
-using Hub.Infrastructure.Web;
 using Microsoft.AspNetCore.Mvc;
+using Hub.Infrastructure.Web.Controllers;
 
 namespace Hub.Web.Controllers
 {

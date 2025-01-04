@@ -3,11 +3,11 @@ using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
-using Hub.Infrastructure.Web;
 using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Newtonsoft.Json;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {

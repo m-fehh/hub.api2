@@ -3,7 +3,7 @@ using Hub.Application.Models.ViewModels;
 using Hub.Domain.Entities;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.Web;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {

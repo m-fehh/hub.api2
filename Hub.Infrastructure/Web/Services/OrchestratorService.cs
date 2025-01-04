@@ -5,7 +5,7 @@ using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Web.Interfaces;
 using System.Linq.Expressions;
 
-namespace Hub.Infrastructure.Web
+namespace Hub.Infrastructure.Web.Services
 {
     /// <summary>
     /// Implementação básica do serviço de CRUD. Essa classe pode ser usada para facilitar a implementação da interface <see cref="ICrudService"/>

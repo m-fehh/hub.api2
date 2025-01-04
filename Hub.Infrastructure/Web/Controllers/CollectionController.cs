@@ -5,7 +5,7 @@ using Hub.Infrastructure.Web.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hub.Infrastructure.Web
+namespace Hub.Infrastructure.Web.Controllers
 {
     /// <summary>
     /// Classe base para todos os controlles da aplicação.

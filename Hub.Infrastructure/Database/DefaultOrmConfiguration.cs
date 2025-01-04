@@ -14,7 +14,7 @@ namespace Hub.Infrastructure.Database
                 Mapeamentos = new ConfigurationMapeamentoCollection()
             };
 
-            var baseConfigurator = Engine.Resolve<ConnectionStringBaseConfigurator>().Get();
+            var baseConfigurator = Engine.Resolve<ConnectionStringInitializer>().Get();
 
             var defaultMapeamento = new ConfigurationMapeamento
             {

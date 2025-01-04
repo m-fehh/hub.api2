@@ -1,7 +1,7 @@
 ﻿using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
 
-namespace Hub.Infrastructure.Web
+namespace Hub.Infrastructure.Web.Services
 {
     /// <summary>
     /// Implementação básica do serviço de CRUD. Essa classe pode ser usada para facilitar a implementação da interface <see cref="ICrudService"/>
@@ -22,11 +22,11 @@ namespace Hub.Infrastructure.Web
         {
             OnBeforeInsert?.Invoke(this, entity);
 
-            using (var transaction = base._repository.BeginTransaction())
+            using (var transaction = _repository.BeginTransaction())
             {
-                var ret = base._repository.Insert(entity);
+                var ret = _repository.Insert(entity);
 
-                if (transaction != null) base._repository.Commit();
+                if (transaction != null) _repository.Commit();
 
                 return ret;
             }
@@ -36,11 +36,11 @@ namespace Hub.Infrastructure.Web
         {
             OnBeforeUpdate?.Invoke(this, entity);
 
-            using (var transaction = base._repository.BeginTransaction())
+            using (var transaction = _repository.BeginTransaction())
             {
-                base._repository.Update(entity);
+                _repository.Update(entity);
 
-                if (transaction != null) base._repository.Commit();
+                if (transaction != null) _repository.Commit();
             }
         }
 
@@ -48,11 +48,11 @@ namespace Hub.Infrastructure.Web
         {
             OnBeforeDelete?.Invoke(this, id);
 
-            using (var transaction = base._repository.BeginTransaction())
+            using (var transaction = _repository.BeginTransaction())
             {
-                base._repository.Delete(id);
+                _repository.Delete(id);
 
-                if (transaction != null) base._repository.Commit();
+                if (transaction != null) _repository.Commit();
             }
         }
     }

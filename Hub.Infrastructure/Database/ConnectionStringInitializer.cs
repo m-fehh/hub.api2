@@ -7,11 +7,11 @@ using Hub.Infrastructure.Architecture;
 
 namespace Hub.Infrastructure.Database
 {
-    public class ConnectionStringBaseConfigurator
+    public class ConnectionStringInitializer
     {
         private ConnectionStringBaseVM _model;
 
-        public ConnectionStringBaseConfigurator()
+        public ConnectionStringInitializer()
         {
             _model = new ConnectionStringBaseVM()
             {

@@ -9,14 +9,12 @@ namespace Hub.Infrastructure.Web.ModelBinder
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
 
-            if (context.Metadata.ModelType == typeof(decimal) ||
-                context.Metadata.ModelType == typeof(decimal?))
+            if (context.Metadata.ModelType == typeof(decimal) || context.Metadata.ModelType == typeof(decimal?))
             {
                 return new BinderTypeModelBinder(typeof(DecimalModelBinder));
             }
 
-            if (context.Metadata.ModelType == typeof(double) ||
-                context.Metadata.ModelType == typeof(double?))
+            if (context.Metadata.ModelType == typeof(double) || context.Metadata.ModelType == typeof(double?))
             {
                 return new BinderTypeModelBinder(typeof(DoubleModelBinder));
             }

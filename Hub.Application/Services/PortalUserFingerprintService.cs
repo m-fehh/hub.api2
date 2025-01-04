@@ -1,6 +1,6 @@
 ﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Database.Interfaces;
-using Hub.Infrastructure.Web;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {

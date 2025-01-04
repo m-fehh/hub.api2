@@ -3,7 +3,6 @@ using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
-using Hub.Infrastructure.Web;
 using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
@@ -14,6 +13,7 @@ using Hub.Infrastructure.ViewModels;
 using Hub.Application.Models.ViewModels;
 using Hub.Application.CorporateStructure.Interfaces;
 using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.Web.Services;
 
 namespace Hub.Application.Services
 {

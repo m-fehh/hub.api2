@@ -33,7 +33,7 @@ namespace Hub.Infrastructure.DependencyInjection
             builder.RegisterType<DefaultOrmConfiguration>().As<IOrmConfiguration>().SingleInstance();
             builder.RegisterType<DefaultOrmConfiguration>().AsSelf().SingleInstance();
 
-            builder.RegisterType<ConnectionStringBaseConfigurator>().AsSelf().SingleInstance();
+            builder.RegisterType<ConnectionStringInitializer>().AsSelf().SingleInstance();
 
             builder.RegisterType<EngineInitializationParametersBuilder>().AsImplementedInterfaces();
             builder.RegisterType<EngineInitializationParametersBuilder>().AsSelf();

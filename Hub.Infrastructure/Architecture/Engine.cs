@@ -765,7 +765,7 @@ namespace Hub.Infrastructure.Architecture
 
                 if (connectionStringBase != null)
                 {
-                    Resolve<ConnectionStringBaseConfigurator>().Set(connectionStringBase);
+                    Resolve<ConnectionStringInitializer>().Set(connectionStringBase);
                 }
 
                 if (TryResolve(out IOrmConfiguration ormConfiguration))

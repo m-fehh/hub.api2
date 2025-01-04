@@ -5,27 +5,27 @@ using Hub.Infrastructure.Web.Attributes;
 using Hub.Infrastructure.Web.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Hub.Infrastructure.Web
+namespace Hub.Infrastructure.Web.Controllers
 {
-    public abstract class CommandController<TEntity, TModel> : CommandController<TEntity, TModel, TModel> where TEntity : IBaseEntity where TModel : IModelEntity
+    public abstract class BaseController<TEntity, TModel> : BaseController<TEntity, TModel, TModel> where TEntity : IBaseEntity where TModel : IModelEntity
     {
-        public CommandController(IOrchestratorService<TEntity> crudService, IDataMapper<TEntity, TModel> modelMapper) : base(crudService, modelMapper, modelMapper) { }
+        public BaseController(IOrchestratorService<TEntity> crudService, IDataMapper<TEntity, TModel> modelMapper) : base(crudService, modelMapper, modelMapper) { }
     }
 
-    public abstract class CommandController<TEntity, TModel, TQueryModel> : CollectionController<TEntity, TQueryModel> where TEntity : IBaseEntity where TModel : IModelEntity where TQueryModel : IModelEntity
+    public abstract class BaseController<TEntity, TModel, TQueryModel> : CollectionController<TEntity, TQueryModel> where TEntity : IBaseEntity where TModel : IModelEntity where TQueryModel : IModelEntity
     {
         #region Defaults
 
         protected string DefaultViewName = "";
         protected string DefaultFormView = "Form";
-        protected TModel InitialModelForNewPage = default(TModel);
+        protected TModel InitialModelForNewPage = default;
         protected Func<TModel, TModel> ModelFactory = null;
         protected IDataMapper<TEntity, TModel> EntityModelMapper;
         protected IOrchestratorService<TEntity, TModel> ModelOrchestrationService = null;
 
         #endregion
 
-        public CommandController(IOrchestratorService<TEntity> crudService, IDataMapper<TEntity, TModel> modelMapper, IDataMapper<TEntity, TQueryModel> queryModelMapper) : base(crudService, queryModelMapper)
+        public BaseController(IOrchestratorService<TEntity> crudService, IDataMapper<TEntity, TModel> modelMapper, IDataMapper<TEntity, TQueryModel> queryModelMapper) : base(crudService, queryModelMapper)
         {
             EntityModelMapper = modelMapper;
             Engine.TryResolve(out ModelOrchestrationService);
