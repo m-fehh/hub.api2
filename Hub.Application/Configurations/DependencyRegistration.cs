@@ -19,22 +19,22 @@ namespace Hub.Application.Configurations
 
             #region SERVICES TENANTS
 
-            builder.RegisterType<DocumentTypeService>().As<ICrudService<DocumentType>>();
+            builder.RegisterType<DocumentTypeService>().As<IOrchestratorService<DocumentType>>();
             builder.RegisterType<DocumentTypeService>().AsSelf();
 
-            builder.RegisterType<PortalUserFingerprintService>().As<ICrudService<PortalUserFingerprint>>();
+            builder.RegisterType<PortalUserFingerprintService>().As<IOrchestratorService<PortalUserFingerprint>>();
             builder.RegisterType<PortalUserFingerprintService>().AsSelf();
 
-            builder.RegisterType<PortalUserPassHistoryService>().As<ICrudService<PortalUserPassHistory>>().AsSelf();
+            builder.RegisterType<PortalUserPassHistoryService>().As<IOrchestratorService<PortalUserPassHistory>>().AsSelf();
             builder.RegisterType<PortalUserPassHistoryService>().AsSelf();
 
-            builder.RegisterType<AccessRuleService>().As<ICrudService<AccessRule>>();
+            builder.RegisterType<AccessRuleService>().As<IOrchestratorService<AccessRule>>();
             builder.RegisterType<AccessRuleService>().AsSelf();
 
             builder.RegisterType<UserProfileControlAccessService>().As<IUserProfileControlAccessService>();
             builder.RegisterType<UserProfileControlAccessService>().AsSelf();
 
-            builder.RegisterType<UserService>().As<ICrudService<PortalUser>>().As<ISecurityProvider>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<UserService>().As<IOrchestratorService<PortalUser>>().As<ISecurityProvider>().AsSelf().InstancePerLifetimeScope();
 
             builder.RegisterType<LoginService>().AsSelf();
 

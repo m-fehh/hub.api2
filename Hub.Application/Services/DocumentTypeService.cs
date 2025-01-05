@@ -7,7 +7,7 @@ using Hub.Infrastructure.Web;
 
 namespace Hub.Application.Services
 {
-    public class DocumentTypeService : CrudService<DocumentType>
+    public class DocumentTypeService : OrchestratorService<DocumentType>
     {
         public DocumentTypeService(IRepository<DocumentType> repository) : base(repository) { }
 

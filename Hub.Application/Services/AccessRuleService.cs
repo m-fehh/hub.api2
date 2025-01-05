@@ -5,7 +5,7 @@ using Hub.Infrastructure.Web;
 
 namespace Hub.Application.Services
 {
-    public class AccessRuleService : CrudService<AccessRule>
+    public class AccessRuleService : OrchestratorService<AccessRule>
     {
         public AccessRuleService(IRepository<AccessRule> repository) : base(repository) { }
 

@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Hub.Infrastructure.Web.Interfaces
 {
-    public interface ICrudService<T> : ICrudService where T : IBaseEntity
+    public interface IOrchestratorService<T> : ICrudService where T : IBaseEntity
     {
         T GetById(long id);
 

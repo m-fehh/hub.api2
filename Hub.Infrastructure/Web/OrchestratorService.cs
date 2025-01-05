@@ -9,11 +9,11 @@ namespace Hub.Infrastructure.Web
     /// Implementação básica do serviço de CRUD. Essa classe pode ser usada para facilitar a implementação da interface <see cref="ICrudService"/>
     /// </summary>
     /// <typeparam name="T">Entidade cuidada pela crud dessa classe</typeparam>
-    public class CrudService<T> : ICrudService<T> where T : class, IBaseEntity
+    public class OrchestratorService<T> : IOrchestratorService<T> where T : class, IBaseEntity
     {
         protected readonly IRepository<T> _repository;
 
-        public CrudService(IRepository<T> repository)
+        public OrchestratorService(IRepository<T> repository)
         {
             _repository = repository;
         }

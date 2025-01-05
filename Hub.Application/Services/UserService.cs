@@ -26,7 +26,7 @@ using Hub.Application.Configurations;
 
 namespace Hub.Application.Services
 {
-    public class UserService : CrudService<PortalUser>, ISecurityProvider
+    public class UserService : OrchestratorService<PortalUser>, ISecurityProvider
     {
         public static AsyncLocal<UserContext> CurrentUserContext = new AsyncLocal<UserContext>();
         private const string TOKEN_KEY_USERID = ClaimTypes.NameIdentifier;
@@ -412,7 +412,7 @@ namespace Hub.Application.Services
                     var userEmailClaim = userJwtTokenKeys.UserEmail;
                     var userDocClaim = userJwtTokenKeys.UserDoc;
 
-                    var portalUserTable = Engine.Resolve<ICrudService<PortalUser>>().Table;
+                    var portalUserTable = Engine.Resolve<IOrchestratorService<PortalUser>>().Table;
 
                     if (currentUser == null && string.IsNullOrWhiteSpace(userIdClaim) == false)
                     {
