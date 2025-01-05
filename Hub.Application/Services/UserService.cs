@@ -29,6 +29,7 @@ using System.Text.RegularExpressions;
 using Hub.Application.Models.ViewModels;
 using Hub.Application.Models.ViewModels.Auth;
 using Hub.Infrastructure.Web.Services;
+using Hub.Application.Configurations;
 
 namespace Hub.Application.Services
 {
@@ -36,7 +37,7 @@ namespace Hub.Application.Services
     {
         public static AsyncLocal<UserContext> CurrentUserContext = new AsyncLocal<UserContext>();
         private const string TOKEN_KEY_USERID = ClaimTypes.NameIdentifier;
-        private const string TOKEN_KEY_USERPROFILEID = "profileId";
+        private const string TOKEN_KEY_USERPROFILEID = SystemConstants.TokenKeys.UserProfileId;
 
         private readonly IRedisService redisService;
         private readonly IAccessTokenProvider accessTokenProvider;
@@ -53,126 +54,156 @@ namespace Hub.Application.Services
             this.orgStructBasedService = orgStructBasedService;
         }
 
-        private void ValidadeInsert(PortalUser entity)
+        private void ValidateInsert(PortalUser user)
         {
-            if (entity.IsFromApi == false && !Boolean.Parse(Engine.Resolve<OrganizationalStructureService>().GetCurrentConfigByName("AllowRegisterUser")))
+            // Verifica se o registro de usuários está permitido pelas configurações da estrutura organizacional
+            var allowUserRegistration = bool.Parse(Engine.Resolve<OrganizationalStructureService>().GetCurrentConfigByName("AllowRegisterUser"));
+
+            if (!user.IsFromApi && !allowUserRegistration)
             {
                 throw new BusinessException(Engine.Get("NotAllowedChangedBecauseOrgStructConfig"));
             }
 
-            Validate(entity);
+            // Valida a entidade base
+            Validate(user);
 
-            if (string.IsNullOrEmpty(entity.TempPassword))
+            // Verifica se a senha temporária está presente para autenticação nativa
+            if (string.IsNullOrEmpty(user.TempPassword))
             {
                 var authProvider = (EPortalAuthProvider)Enum.Parse(typeof(EPortalAuthProvider), Engine.AppSettings["auth-provider"]);
 
                 if (authProvider == EPortalAuthProvider.Native)
                 {
-                    throw new BusinessException(entity.DefaultRequiredMessage(e => e.TempPassword));
+                    throw new BusinessException(user.DefaultRequiredMessage(u => u.TempPassword));
                 }
             }
         }
 
-        public override long Insert(PortalUser entity)
+
+        public override long Insert(PortalUser user)
         {
-            if (entity.IsFromApi == false)
+            if (!user.IsFromApi)
             {
-                ValidatePassword(entity.Password);
+                ValidatePassword(user.Password);
             }
 
-            if (entity.DefaultOrgStructure == null && entity.OrganizationalStructures != null)
+            if (user.DefaultOrgStructure == null && user.OrganizationalStructures != null)
             {
-                entity.DefaultOrgStructure = entity.OrganizationalStructures.FirstOrDefault();
+                user.DefaultOrgStructure = user.OrganizationalStructures.FirstOrDefault();
             }
 
-            ValidadeInsert(entity);
+            // Validação de inserção
+            ValidateInsert(user);
 
-            if (entity.IsFromApi == false)
+            // Processa estrutura organizacional do proprietário
+            if (!user.IsFromApi)
             {
-                orgStructBasedService.LinkOwnerOrgStruct(entity);
+                orgStructBasedService.LinkOwnerOrgStruct(user);
             }
             else
             {
-                entity.OwnerOrgStruct = Engine.Resolve<IHubCurrentOrganizationStructure>().GetCurrentRoot();
+                user.OwnerOrgStruct = Engine.Resolve<IHubCurrentOrganizationStructure>().GetCurrentRoot();
             }
 
             using (var transaction = _repository.BeginTransaction())
             {
-                entity.Person = Engine.Resolve<PersonService>().SavePerson(entity.Person.Document, entity.Name, entity.OrganizationalStructures.ToList(), entity.OwnerOrgStruct);
+                user.Person = Engine.Resolve<PersonService>().SavePerson(user.Person.Document, user.Name, user.OrganizationalStructures.ToList(), user.OwnerOrgStruct);
 
-                if (string.IsNullOrEmpty(entity.Password)) entity.Password = "voe[it{!@#}t^mp-p@ss]";
-
-                entity.Password = entity.Password.EncodeSHA1();
-                entity.Keyword = Engine.Resolve<UserKeywordService>().GenerateKeyword(entity.Name);
-
-                var ret = _repository.Insert(entity);
-
-                Engine.Resolve<IOrchestratorService<PortalUserSetting>>().Insert(new PortalUserSetting()
+                // Define senha padrão, se não fornecida
+                if (string.IsNullOrEmpty(user.Password))
                 {
-                    PortalUserId = entity.Id,
+                    user.Password = "Temp#portal!";
+                }
+
+                user.Password = user.Password.EncodeSHA1();
+
+                // Gera e atribui palavra-chave
+                user.Keyword = Engine.Resolve<UserKeywordService>().GenerateKeyword(user.Name);
+
+                // Insere o usuário no repositório
+                var userId = _repository.Insert(user);
+
+                // Configura preferências do usuário
+                var userSetting = new PortalUserSetting
+                {
+                    PortalUserId = user.Id,
                     Name = "current-organizational-structure",
-                    Value = entity.DefaultOrgStructure.Id.ToString()
-                });
+                    Value = user.DefaultOrgStructure.Id.ToString()
+                };
+
+                Engine.Resolve<IOrchestratorService<PortalUserSetting>>().Insert(userSetting);
 
                 if (transaction != null) _repository.Commit();
 
-                return ret;
+                return userId;
             }
         }
 
-        public override void Update(PortalUser entity)
+
+        public override void Update(PortalUser user)
         {
-            if (string.IsNullOrEmpty(entity.Keyword))
+            // Validações do Keyword
+            if (string.IsNullOrEmpty(user.Keyword))
             {
-                throw new BusinessException(entity.DefaultRequiredMessage(e => e.Keyword));
+                throw new BusinessException(user.DefaultRequiredMessage(e => e.Keyword));
             }
 
-            var userKeywordService = Engine.Resolve<UserKeywordService>();
+            var keywordService = Engine.Resolve<UserKeywordService>();
 
-            if (!userKeywordService.IsKeywordValid(entity.Keyword))
+            if (!keywordService.IsKeywordValid(user.Keyword))
             {
                 throw new BusinessException(Engine.Get("UserKeywordInvalid"));
             }
 
-            if (userKeywordService.IsKeywordInUse(entity.Id, entity.Keyword))
+            if (keywordService.IsKeywordInUse(user.Id, user.Keyword))
             {
                 throw new BusinessException(Engine.Get("UserKeywordInUse"));
             }
 
-            if (entity.OrganizationalStructures == null || entity.OrganizationalStructures.Count == 0)
+            // Validação de Estruturas Organizacionais
+            if (user.OrganizationalStructures == null || user.OrganizationalStructures.Count == 0)
             {
                 throw new BusinessException(Engine.Get("UserOrgStructRequired"));
             }
 
-            SetUserDefaultOrganizationalStructure(entity);
+            // Atribui a Estrutura Organizacional Padrão do Usuário
+            SetUserDefaultOrganizationalStructure(user);
 
-            entity.OwnerOrgStructId = _repository.Table.Where(x => x.Id == entity.Id).Select(x => x.OwnerOrgStructId).FirstOrDefault();
+            // Atualiza a estrutura organizacional do proprietário
+            user.OwnerOrgStructId = _repository.Table.Where(x => x.Id == user.Id).Select(x => x.OwnerOrgStructId).FirstOrDefault();
 
-            if (entity.ChangingPass && !string.IsNullOrEmpty(entity.Password))
+            // Processa a alteração da senha
+            if (user.ChangingPass && !string.IsNullOrEmpty(user.Password))
             {
-                entity.Password = entity.Password.EncodeSHA1();
+                user.Password = user.Password.EncodeSHA1();
             }
-            else if (string.IsNullOrEmpty(entity.Password))
+            else if (string.IsNullOrEmpty(user.Password))
             {
-                entity.Password = Table.Where(u => u.Id == entity.Id).Select(p => p.Password).First();
+                user.Password = Table.Where(u => u.Id == user.Id).Select(p => p.Password).First();
             }
 
-            using (var transaction = base._repository.BeginTransaction())
+            // Inicia a transação e realiza as operações
+            using (var transaction = _repository.BeginTransaction())
             {
-                entity.Person = Engine.Resolve<PersonService>().SavePerson(entity.Person.Document, entity.Name, entity.OrganizationalStructures.ToList());
+                // Salva as informações pessoais
+                user.Person = Engine.Resolve<PersonService>()
+                    .SavePerson(user.Person.Document, user.Name, user.OrganizationalStructures.ToList());
 
-                base._repository.Update(entity);
+                _repository.Update(user);
 
-                if (entity.ChangingPass)
+                // Se a senha foi alterada, insere o registro de alteração
+                if (user.ChangingPass)
                 {
-                    InsertPasswordChangeRecord(entity);
+                    InsertPasswordChangeRecord(user);
                 }
 
-                if (transaction != null) base._repository.Commit();
+                if(transaction != null) _repository.Commit();
             }
 
-            currentOrganizationStructure.UpdateUser(entity.Id);
+            // Atualiza a estrutura organizacional do usuário
+            currentOrganizationStructure.UpdateUser(user.Id);
         }
+
 
         public override void Delete(long id)
         {
@@ -741,43 +772,43 @@ namespace Hub.Application.Services
 
         #region AUTHENTICATION  
 
-        //public UserAuthVM AuthenticateToken(string token)
-        //{
-        //    var tokenResult = Engine.Resolve<IAccessTokenProvider>().ValidateToken(token);
+        public AuthResultVM AuthenticateToken(string token)
+        {
+            var tokenResult = Engine.Resolve<IAccessTokenProvider>().ValidateToken(token);
 
-        //    if (tokenResult.Status != AccessTokenStatus.Valid)
-        //    {
-        //        return null;
-        //    }
+            if (tokenResult.Status != AccessTokenStatus.Valid)
+            {
+                return null;
+            }
 
-        //    var claim = tokenResult.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var claim = tokenResult.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
-        //    if (claim == null)
-        //    {
-        //        return null;
-        //    }
+            if (claim == null)
+            {
+                return null;
+            }
 
-        //    var id = long.Parse(claim.Value);
+            var id = long.Parse(claim.Value);
 
-        //    var user = GetById(id);
+            var user = GetById(id);
 
-        //    var orgs = GetCurrentUserOrgList(user);
+            var orgs = GetCurrentUserOrgList(user);
 
-        //    //var establishments = Engine.Resolve<IRepository<Establishment>>().Table.Where(e => orgs.Contains(e.OrganizationalStructure.Id)).Select(e => e.CNPJ).ToList();
+            //var establishments = Engine.Resolve<IRepository<Establishment>>().Table.Where(e => orgs.Contains(e.OrganizationalStructure.Id)).Select(e => e.CNPJ).ToList();
 
-        //    return new UserAuthVM
-        //    {
-        //        Id = user.QrCodeInfo,
-        //        CPF = user.Document,
-        //        Name = user.Name,
-        //        Email = user.Email,
-        //        MobilePhone = user.AreaCode + user.PhoneNumber,
-        //        Inactive = user.Inactive,
-        //        ProfileId = user.Profile.Id,
-        //        ProfileName = user.Profile.Name,
-        //        //Establishments = establishments
-        //    };
-        //}
+            return new AuthResultVM
+            {
+                Id = user.QrCodeInfo,
+                CPF = user.Document,
+                Name = user.Name,
+                Email = user.Email,
+                MobilePhone = user.AreaCode + user.PhoneNumber,
+                Inactive = user.Inactive,
+                ProfileId = user.Profile.Id,
+                ProfileName = user.Profile.Name,
+                //Establishments = establishments
+            };
+        }
 
         public void Authenticate(string token)
         {

@@ -13,37 +13,35 @@ namespace Hub.Web.Controllers
         [HttpPost]
         public IActionResult Login([FromBody] AuthVM request)
         {
-            //try
-            //{
-            //    request.Provider = EAuthProvider.Api;
+            try
+            {
+                request.Provider = EAuthProvider.Api;
 
-            //    var userService = Engine.Resolve<UserService>();
+                var userService = Engine.Resolve<UserService>();
 
-            //    userService.Authenticate(request);
+                userService.Authenticate(request);
 
-            //    if (request.Token == null)
-            //    {
-            //        return StatusCode((int)HttpStatusCode.Unauthorized);
-            //    }
+                if (request.Token == null)
+                {
+                    return StatusCode((int)HttpStatusCode.Unauthorized);
+                }
 
-            //    var userData = userService.AuthenticateToken(request.Token);
+                var userData = userService.AuthenticateToken(request.Token);
 
-            //    return StatusCode((int)HttpStatusCode.OK, new { error = false, request.Token, Data = userData });
-            //}
-            //catch (BusinessException bex)
-            //{
-            //    return StatusCode((int)HttpStatusCode.Unauthorized, new { error = true, message = bex.Message });
-            //}
-            //catch (Exception ex)
-            //{
-            //    var log = Engine.Resolve<LogService>().LogError(ex, "API-Auth-Login");
+                return StatusCode((int)HttpStatusCode.OK, new { error = false, request.Token, Data = userData });
+            }
+            catch (BusinessException bex)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized, new { error = true, message = bex.Message });
+            }
+            catch (Exception ex)
+            {
+                var log = Engine.Resolve<LogService>().LogError(ex, "API-Auth-Login");
 
-            //    var msg = string.Format(Engine.Get("AnErrorWasOcurredReportNumber"), log.ObjectId);
+                var msg = string.Format(Engine.Get("AnErrorWasOcurredReportNumber"), log.ObjectId);
 
-            //    return StatusCode((int)HttpStatusCode.InternalServerError, new { error = true, message = msg });
-            //}
-
-            return Ok();
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { error = true, message = msg });
+            }
         }
 
         /// <summary>
@@ -54,29 +52,26 @@ namespace Hub.Web.Controllers
         [HttpPost]
         public IActionResult Authenticate([FromBody] AuthVM request)
         {
-            //try
-            //{
-            //    var model = Engine.Resolve<UserService>().AuthenticateToken(request.Token);
+            try
+            {
+                var model = Engine.Resolve<UserService>().AuthenticateToken(request.Token);
 
-            //    if (model == null)
-            //    {
-            //        return StatusCode((int)HttpStatusCode.Unauthorized);
-            //    }
+                if (model == null)
+                {
+                    return StatusCode((int)HttpStatusCode.Unauthorized);
+                }
 
 
-            //    return StatusCode((int)HttpStatusCode.OK, model);
-            //}
-            //catch (Exception ex)
-            //{
-            //    var log = Engine.Resolve<LogService>().LogError(ex, "API-Auth-Authenticate");
+                return StatusCode((int)HttpStatusCode.OK, model);
+            }
+            catch (Exception ex)
+            {
+                var log = Engine.Resolve<LogService>().LogError(ex, "API-Auth-Authenticate");
 
-            //    var msg = string.Format(Engine.Get("AnErrorWasOcurredReportNumber"), log.ObjectId);
+                var msg = string.Format(Engine.Get("AnErrorWasOcurredReportNumber"), log.ObjectId);
 
-            //    return StatusCode((int)HttpStatusCode.Unauthorized, new { error = true, message = msg });
-            //}
-
-            return Ok();
-
+                return StatusCode((int)HttpStatusCode.Unauthorized, new { error = true, message = msg });
+            }
         }
     }
 }

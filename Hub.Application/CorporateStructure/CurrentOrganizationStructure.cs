@@ -12,6 +12,7 @@ using Hub.Application.Services;
 using Hub.Domain.Entities.Users;
 using Hub.Application.CorporateStructure.Interfaces;
 using Hub.Infrastructure.Database.Models;
+using Hub.Domain.Entities;
 
 namespace Hub.Application.CorporateStructure
 {
@@ -270,26 +271,26 @@ namespace Hub.Application.CorporateStructure
             return GetById(domain.Father_Id.Value);
         }
 
-        //public TimeZoneInfo GetCurrentTimezone()
-        //{
-        //    var currentId = hubCurrentOrganizationStructure.Get();
+        public TimeZoneInfo GetCurrentTimezone()
+        {
+            var currentId = hubCurrentOrganizationStructure.Get();
 
-        //    if (string.IsNullOrEmpty(currentId)) return null;
+            if (string.IsNullOrEmpty(currentId)) return null;
 
-        //    return GetTimezone(long.Parse(currentId));
-        //}
+            return GetTimezone(long.Parse(currentId));
+        }
 
-        //public TimeZoneInfo GetTimezone(long id)
-        //{
-        //    Func<long, string> fn = (orgId) =>
-        //    {
-        //        return Engine.Resolve<IRepository<Establishment>>().Table.Where(e => e.OrganizationalStructure.Id == id).Select(e => e.Timezone).FirstOrDefault();
-        //    };
+        public TimeZoneInfo GetTimezone(long id)
+        {
+            Func<long, string> fn = (orgId) =>
+            {
+                return Engine.Resolve<IRepository<Establishment>>().Table.Where(e => e.OrganizationalStructureId == id).Select(e => e.Timezone).FirstOrDefault();
+            };
 
-        //    var timezone = Engine.Resolve<CacheManager>().CacheAction(() => fn(id));
+            var timezone = Engine.Resolve<CacheManager>().CacheAction(() => fn(id));
 
-        //    return TimeZoneInfo.FindSystemTimeZoneById(timezone);
-        //}
+            return TimeZoneInfo.FindSystemTimeZoneById(timezone);
+        }
 
         public OrganizationalStructureVM Set(long id)
         {

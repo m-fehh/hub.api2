@@ -10,12 +10,15 @@ namespace Hub.Infrastructure.Database.Interfaces
     {
         OrganizationalStructureVM GetCurrentDomain(long? structId = null);
         OrganizationalStructureVM GetCurrentRoot();
+
         OrganizationalStructureVM GetCurrent();
+
         OrganizationalStructureVM Set(long id);
 
         void Set(OrganizationalStructureVM org);
+
         void SetByCookieData(string cookieData);
 
-        //TimeZoneInfo GetCurrentTimezone();
+        TimeZoneInfo GetCurrentTimezone();
     }
 }

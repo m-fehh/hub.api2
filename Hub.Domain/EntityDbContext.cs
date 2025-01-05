@@ -31,6 +31,8 @@ public class EntityDbContext : DbContext
 
     public DbSet<OrgStructConfigDefault> OrgStructConfigDefaults { get; set; } = null!;
 
+    public DbSet<Establishment> Establishments { get; set; } = null!;
+
     #endregion
 
     #region USERS
