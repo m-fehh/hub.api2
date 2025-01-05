@@ -49,6 +49,10 @@ namespace Hub.Domain.Entities
         [StringLength(15)]
         public virtual string ClosingTime { get; set; }
 
+        public virtual DateTime? SystemStartDate { get; set; }
+
+        public virtual DateTime? SystemEndDate { get; set; }
+
         [Required]
         [StringLength(100)]
         public virtual string Description { get; set; }
@@ -59,6 +63,8 @@ namespace Hub.Domain.Entities
 
         [StringLength(120)]
         public virtual string Timezone { get; set; }
+
+        public virtual int? TimezoneOffset { get; set; }
 
         public virtual string GetTimezone()
         {

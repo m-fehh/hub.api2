@@ -5,7 +5,7 @@ namespace Hub.Application.CorporateStructure
     /// <summary>
     /// cacheamento local por request ou lifetimescope para evitar multiplas consultas ao redis 
     /// </summary>
-    public class PortalCache
+    public class PortalCacheManager
     {
         /// <summary>
         /// faz a desambiguação entre o contexto web (per request) ou lifetimescope

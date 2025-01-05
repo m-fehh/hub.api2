@@ -129,7 +129,7 @@ namespace Hub.Application.CorporateStructure
             {
                 structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
 
-                var localcached = Engine.Resolve<PortalCache>().Get().CurrentDomain;
+                var localcached = Engine.Resolve<PortalCacheManager>().Get().CurrentDomain;
 
                 if (!string.IsNullOrEmpty(localcached)) return localcached;
 
@@ -143,7 +143,7 @@ namespace Hub.Application.CorporateStructure
             {
                 try
                 {
-                    Engine.Resolve<PortalCache>().Get().CurrentDomain = cached;
+                    Engine.Resolve<PortalCacheManager>().Get().CurrentDomain = cached;
                 }
                 catch (Exception) { }
 
@@ -156,7 +156,7 @@ namespace Hub.Application.CorporateStructure
 
             try
             {
-                Engine.Resolve<PortalCache>().Get().CurrentDomain = fromDb;
+                Engine.Resolve<PortalCacheManager>().Get().CurrentDomain = fromDb;
             }
             catch (Exception) { }
 

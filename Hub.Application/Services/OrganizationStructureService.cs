@@ -14,6 +14,8 @@ using Hub.Application.Models.ViewModels;
 using Hub.Application.CorporateStructure.Interfaces;
 using Hub.Infrastructure.Database.Models;
 using Hub.Infrastructure.Web.Services;
+using Hub.Domain.Entities;
+using Hub.Application.CorporateStructure;
 
 namespace Hub.Application.Services
 {
@@ -77,6 +79,15 @@ namespace Hub.Application.Services
 
                 if (transaction != null) _repository.Commit();
             }
+        }
+
+        public void UpdateLastUpdateUTC(long orgStructureId)
+        {
+            var entity = GetById(orgStructureId);
+
+            entity.LastUpdateUTC = DateTime.UtcNow;
+
+            this.Update(entity);
         }
 
         public override void Delete(long id)
@@ -190,6 +201,64 @@ namespace Hub.Application.Services
             var root = service.GetCurrentRoot();
             var configName = GetConfigByName(root, name);
             return !string.IsNullOrWhiteSpace(configName) && configName != "-" ? configName : "";
+        }
+
+        public Establishment GetCurrentEstablishment(string currentStringLevel = null)
+        {
+            if (string.IsNullOrEmpty(currentStringLevel))
+            {
+                currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+            }
+
+            if (string.IsNullOrEmpty(currentStringLevel)) return null;
+
+            var currentLevel = long.Parse(currentStringLevel);
+
+            return Engine.Resolve<IRepository<Establishment>>().Table.Where(r => r.OrganizationalStructure.Id == currentLevel).FirstOrDefault();
+        }
+
+        public TimeZoneInfo GetCurrentEstablishmentTimeZone(string currentStringLevel = null)
+        {
+            Func<string, TimeZoneInfo> fn = (orgLevel) =>
+            {
+                var redisService = Engine.Resolve<IRedisService>();
+
+                var cachedTimeZone = redisService.Get($"TimeZone{orgLevel}").ToString();
+
+                if (!string.IsNullOrEmpty(cachedTimeZone))
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById(cachedTimeZone);
+                }
+
+                var establishemnt = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishment(orgLevel);
+
+                if (establishemnt != null && !string.IsNullOrEmpty(establishemnt.Timezone))
+                {
+                    redisService.Set($"TimeZone{orgLevel}", establishemnt.Timezone);
+
+                    return TimeZoneInfo.FindSystemTimeZoneById(establishemnt.Timezone);
+                }
+
+                return null;
+            };
+
+            if (string.IsNullOrEmpty(currentStringLevel))
+            {
+                var localcached = Engine.Resolve<PortalCacheManager>().Get().CurrentTimezone;
+
+                if (!string.IsNullOrEmpty(localcached))
+                {
+                    if (localcached == "-") return null;
+
+                    return TimeZoneInfo.FindSystemTimeZoneById(localcached);
+                }
+
+                currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+            }
+
+            if (string.IsNullOrEmpty(currentStringLevel)) return null;
+
+            return Engine.Resolve<CacheManager>().CacheAction(() => fn(currentStringLevel));
         }
 
         //public void ChangeOwnerOrgStruct(string objectType, long objectId, long newOwnerOrgStructId)

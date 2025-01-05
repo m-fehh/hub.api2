@@ -1,5 +1,6 @@
-﻿using Hub.Application.Models.ViewModels;
+﻿using Hub.Domain.Entities;
 using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.ViewModels;
 
 namespace Hub.Application.CorporateStructure.Interfaces
 {
@@ -22,5 +23,7 @@ namespace Hub.Application.CorporateStructure.Interfaces
         bool ClientUseNickName(long structureId);
 
         List<OrganizationalStructureTreeModelVM> GenerateTreeList(bool removeNotAccessOrg = true);
+
+        Establishment GetCurrentEstablishment(string currentStringLevel = null);
     }
 }

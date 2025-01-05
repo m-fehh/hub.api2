@@ -24,6 +24,8 @@ namespace Hub.Application.Configurations
 
             builder.RegisterType<HubCurrentOrganizationStructure>().As<IHubCurrentOrganizationStructure>().SingleInstance();
             builder.RegisterType<CurrentOrganizationStructure>().As<ICurrentOrganizationStructure>().SingleInstance();
+            builder.RegisterType<TimezoneManager>().As<ICurrentTimezone>().SingleInstance();
+
 
             #region SERVICES TENANTS
 
@@ -58,6 +60,9 @@ namespace Hub.Application.Configurations
             builder.RegisterType<OrganizationalStructureService>().AsSelf();
             builder.RegisterType<OrganizationalStructureService>().As<IOrgStructBasedService>();
             builder.RegisterType<OrganizationalStructureService>().As<IOrganizationalStructureService>();
+
+            builder.RegisterType<EstablishmentService>().As<IOrchestratorService<Establishment>>();
+            builder.RegisterType<EstablishmentService>().AsSelf();
 
             builder.RegisterType<AdminDbContext>().As<DbContext>().InstancePerLifetimeScope();
 
