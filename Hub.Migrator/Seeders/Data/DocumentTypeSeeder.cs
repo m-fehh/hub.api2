@@ -1,5 +1,5 @@
 ﻿using Hub.Domain.Entities;
-using Hub.Infrastructure.Internacionalization.Enums;
+using Hub.Infrastructure.Architecture.Internacionalization.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hub.Migrator.Seeders.Data

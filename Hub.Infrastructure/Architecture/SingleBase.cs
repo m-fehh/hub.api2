@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.Autofac.Interfaces;
+﻿using Hub.Infrastructure.Architecture.Autofac.Interfaces;
 
 namespace Hub.Infrastructure.Architecture
 {

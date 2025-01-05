@@ -1,5 +1,5 @@
-﻿using Hub.Infrastructure.Database.Entity;
-using Hub.Infrastructure.Internacionalization.Enums;
+﻿using Hub.Infrastructure.Architecture.Internacionalization.Enums;
+using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

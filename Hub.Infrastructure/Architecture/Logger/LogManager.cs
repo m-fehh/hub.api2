@@ -1,11 +1,11 @@
 ﻿using Hub.Infrastructure.Architecture.Logger.Enums;
 using Hub.Infrastructure.Architecture.Logger.Interfaces;
+using Hub.Infrastructure.Architecture.Nominator.Interfaces;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Extensions;
-using Hub.Infrastructure.Nominator.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;

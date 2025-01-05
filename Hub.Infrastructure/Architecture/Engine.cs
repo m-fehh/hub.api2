@@ -20,6 +20,7 @@ using Hub.Infrastructure.Architecture.Mapper;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 using System.Threading.Tasks;
 using Hub.Infrastructure.Architecture.Tasks;
+using Hub.Infrastructure.Architecture.Autofac;
 
 namespace Hub.Infrastructure.Architecture
 {

@@ -1,11 +1,12 @@
 ﻿using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.DistributedLock.Interfaces;
+using Hub.Infrastructure.Architecture.HealthChecker;
+using Hub.Infrastructure.Architecture.HealthChecker.Interfaces;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.Autofac;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.HealthChecker;
 using Hub.Infrastructure.HealthChecker.Builders;
-using Hub.Infrastructure.HealthChecker.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using System.Linq.Expressions;

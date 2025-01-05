@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.Internacionalization.Enums;
+﻿using Hub.Infrastructure.Architecture.Internacionalization.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Hub.Application.Models.ViewModels

@@ -1,11 +1,12 @@
 ﻿using Hub.Infrastructure.HealthChecker.Builders;
-using Hub.Infrastructure.HealthChecker.Interfaces;
 using Hub.Infrastructure.HealthChecker;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using RedLockNet;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.DistributedLock.Interfaces;
+using Hub.Infrastructure.Architecture.HealthChecker;
+using Hub.Infrastructure.Architecture.HealthChecker.Interfaces;
 
 namespace Hub.Infrastructure.Architecture.DistributedLock
 {

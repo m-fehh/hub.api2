@@ -3,11 +3,9 @@ using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Database;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Autofac.Core;
-using Hub.Infrastructure.Autofac.Interfaces;
 using Autofac.Core.Registration;
 using Hub.Infrastructure.Generator;
 using Hub.Infrastructure.Database.Entity;
-using Hub.Infrastructure.Autofac.Builders;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.Cache;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
@@ -18,11 +16,13 @@ using Hub.Infrastructure.Architecture.Logger.Interfaces;
 using Hub.Infrastructure.Architecture.Localization.Interfaces;
 using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Autofac;
-using FMK.Core.Nominator;
-using Hub.Infrastructure.Nominator.Interfaces;
 using Hub.Infrastructure.Database.Services;
 using Hub.Infrastructure.Web.Interfaces;
 using Hub.Infrastructure.Database.Models.Administrator;
+using Hub.Infrastructure.Architecture.Autofac.Builders;
+using Hub.Infrastructure.Architecture.Autofac.Interfaces;
+using Hub.Infrastructure.Architecture.Nominator;
+using Hub.Infrastructure.Architecture.Nominator.Interfaces;
 
 namespace Hub.Infrastructure.DependencyInjection
 {

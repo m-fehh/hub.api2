@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.HealthChecker.Interfaces;
+﻿using Hub.Infrastructure.Architecture.HealthChecker.Interfaces;
 
 namespace Hub.Infrastructure.Exceptions
 {

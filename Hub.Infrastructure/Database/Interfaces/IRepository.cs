@@ -1,4 +1,4 @@
-﻿using Hub.Infrastructure.Autofac.Interfaces;
+﻿using Hub.Infrastructure.Architecture.Autofac.Interfaces;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 
 namespace Hub.Infrastructure.Database.Interfaces
