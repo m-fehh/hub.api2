@@ -1,4 +1,4 @@
-﻿using Hub.Application.Services;
+﻿using Hub.Application.Services.Users;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 

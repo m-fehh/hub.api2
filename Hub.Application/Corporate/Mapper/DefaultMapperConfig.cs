@@ -3,12 +3,12 @@ using Hub.Application.Models.ViewModels;
 using Hub.Domain.Entities;
 using Hub.Infrastructure.Architecture.Mapper;
 
-namespace Hub.Application.Configurations.Mapper
+namespace Hub.Application.Corporate.Mapper
 {
     /// <summary>
     /// Centraliza todas as configurações de mapemaneto do automapper
     /// </summary>
-    public class MapperConfig : IAutoMapperStartup
+    public class DefaultMapperConfig : IAutoMapperStartup
     {
         /// <summary>
         /// Criação centralizada dos mapeamentos do automapper

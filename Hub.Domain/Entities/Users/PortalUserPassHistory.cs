@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hub.Domain.Entities
+namespace Hub.Domain.Entities.Users
 {
     [Table("PortalUserPassHistory")]
     public class PortalUserPassHistory : BaseEntity

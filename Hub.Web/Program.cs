@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Autofac.Extensions.DependencyInjection;
 using OfficeOpenXml;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
-using Hub.Application.Configurations;
 using Hub.Infrastructure.Database;
 using Hangfire;
 using WebEssentials.AspNetCore.OutputCaching;
@@ -27,7 +26,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Hub.Web.Middlewares;
 using Hub.Infrastructure.Extensions;
 using Hub.Domain.Persistence;
-using Hub.Application.Search;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Application.Resource;
 using Hub.Infrastructure.Architecture;
@@ -35,13 +33,14 @@ using Hub.Infrastructure.Architecture.Cache;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.DistributedLock;
 using Hub.Infrastructure.Architecture.Localization;
-using Hub.Application.Hangfire;
 using Hub.Infrastructure.Architecture.Resources;
 using Hub.Infrastructure.Web.ModelBinder;
 using Hub.Infrastructure.Architecture.Tasks.Interfaces;
 using Hub.Infrastructure.Database.Entity;
-using Hub.Infrastructure.Autofac;
-using Hub.Application;
+using Hub.Application.Corporate.Hangfire;
+using Hub.Application.Corporate;
+using Hub.Application.Corporate.Configurations;
+using Hub.Application.Corporate.Search;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -50,11 +49,6 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
     options.Providers.Add<BrotliCompressionProvider>();
 });
-
-//builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
-//{
-//    options.Level = (System.IO.Compression.CompressionLevel)CompressionLevel.BestCompression;
-//});
 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 
@@ -72,7 +66,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
 {
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
-        nameProvider: new HubTenantNameProvider(),
+        nameProvider: new CorporateTenantProvider(),
         tasks:
         new List<IStartupTask>()
         {
@@ -232,7 +226,7 @@ builder.Services
                 int.TryParse(hangfireRedisDBNumber, out var dbNumber);
 
                 configuration.UseRedisStorage(
-                    ConnectionMultiplexer.Connect(Engine.ConnectionString("hangfire")),
+                    ConnectionMultiplexer.Connect(Engine.ConnectionString("redis")),
                     new RedisStorageOptions()
                     {
                         Prefix = "hub:{hangfire}:" + hfServerName,

@@ -5,7 +5,7 @@ using Hangfire.Storage;
 using Hangfire;
 using Hub.Infrastructure.Exceptions;
 
-namespace Hub.Application.Hangfire
+namespace Hub.Application.Corporate.Hangfire
 {
     public sealed class CustomAutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
@@ -224,7 +224,7 @@ namespace Hub.Application.Hangfire
             var reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}";
 
             context.CandidateState = delay == TimeSpan.Zero
-                ? (IState)new EnqueuedState { Reason = reason }
+                ? new EnqueuedState { Reason = reason }
                 : new ScheduledState(delay) { Reason = reason };
 
             if (LogEvents)

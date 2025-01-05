@@ -5,9 +5,9 @@ using Hub.Infrastructure.Web;
 using System.Collections.Concurrent;
 using Hub.Infrastructure.Database.Services;
 
-namespace Hub.Application
+namespace Hub.Application.Corporate
 {
-    public class HubTenantNameProvider : IEntityNameProvider
+    public class CorporateTenantProvider : IEntityNameProvider
     {
         public static AsyncLocal<string> CurrentTenant = new AsyncLocal<string>();
 

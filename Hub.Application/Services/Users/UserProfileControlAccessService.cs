@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.Security.Authentication;
 using Hub.Domain.Entities;
 
-namespace Hub.Application.Services
+namespace Hub.Application.Services.Users
 {
     /// <summary>
     /// Interface resposável por validar o controle de acesso
@@ -76,7 +76,7 @@ namespace Hub.Application.Services
                 var profileAllowMultipleAccess = Engine.Resolve<UserService>().Get(w => w.Id == parameter.UserId, s => ((ProfileGroup)s.Profile).AllowMultipleAccess, 1, true).FirstOrDefault();
                 if (profileAllowMultipleAccess == false)
                 {
-                    this.Save(parameter, profileAllowMultipleAccess);
+                    Save(parameter, profileAllowMultipleAccess);
                 }
             }
 

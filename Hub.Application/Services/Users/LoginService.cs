@@ -1,4 +1,4 @@
-﻿using Hub.Domain.Entities;
+﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.OAuth.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
@@ -6,7 +6,7 @@ using Hub.Infrastructure.Exceptions;
 using Hub.Infrastructure.Extensions;
 using System.Security.Claims;
 
-namespace Hub.Application.Services
+namespace Hub.Application.Services.Users
 {
     public class LoginService
     {

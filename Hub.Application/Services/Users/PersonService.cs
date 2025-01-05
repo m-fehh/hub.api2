@@ -1,10 +1,10 @@
-﻿using Hub.Domain.Entities;
+﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
 using Hub.Infrastructure.Web;
 
-namespace Hub.Application.Services
+namespace Hub.Application.Services.Users
 {
     public class PersonService : OrchestratorService<Person>
     {
@@ -38,11 +38,11 @@ namespace Hub.Application.Services
         {
             ValidateInsert(entity);
 
-            using (var transaction = base._repository.BeginTransaction())
+            using (var transaction = _repository.BeginTransaction())
             {
-                var ret = base._repository.Insert(entity);
+                var ret = _repository.Insert(entity);
 
-                if (transaction != null) base._repository.Commit();
+                if (transaction != null) _repository.Commit();
 
                 return ret;
             }
@@ -52,21 +52,21 @@ namespace Hub.Application.Services
         {
             Validate(entity);
 
-            using (var transaction = base._repository.BeginTransaction())
+            using (var transaction = _repository.BeginTransaction())
             {
-                base._repository.Update(entity);
+                _repository.Update(entity);
 
-                if (transaction != null) base._repository.Commit();
+                if (transaction != null) _repository.Commit();
             }
         }
 
         public override void Delete(long id)
         {
-            using (var transaction = base._repository.BeginTransaction())
+            using (var transaction = _repository.BeginTransaction())
             {
-                base._repository.Delete(id);
+                _repository.Delete(id);
 
-                if (transaction != null) base._repository.Commit();
+                if (transaction != null) _repository.Commit();
             }
         }
 

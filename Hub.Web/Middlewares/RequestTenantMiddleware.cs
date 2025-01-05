@@ -1,4 +1,4 @@
-﻿using Hub.Application;
+﻿using Hub.Application.Corporate;
 using Hub.Infrastructure.Architecture;
 
 namespace Hub.Web.Middlewares
@@ -16,7 +16,7 @@ namespace Hub.Web.Middlewares
         {
             var baseUrl = string.Format("{0}://{1}", context.Request.Scheme, context.Request.Host.Value);
 
-            Engine.Resolve<HubTenantNameProvider>().SetCurrentTenant(baseUrl);
+            Engine.Resolve<CorporateTenantProvider>().SetCurrentTenant(baseUrl);
 
             await _next(context);
         }

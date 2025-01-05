@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Hub.Domain.Entities
+namespace Hub.Domain.Entities.Users
 {
     [Table("PortalUser")]
     public class PortalUser : BaseEntity, IUserAccount, IModificationControl
@@ -48,7 +48,7 @@ namespace Hub.Domain.Entities
 
         [IgnoreLog]
         public virtual bool ChangingPass { get; set; }
-        
+
         public virtual bool Inactive { get; set; }
 
         [StringLength(50)]

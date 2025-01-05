@@ -1,8 +1,8 @@
-﻿using Hub.Domain.Entities;
+﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Web;
 
-namespace Hub.Application.Services
+namespace Hub.Application.Services.Users
 {
     public class PortalUserPassHistoryService : OrchestratorService<PortalUserPassHistory>
     {
@@ -21,7 +21,7 @@ namespace Hub.Application.Services
 
             using (var transaction = _repository.BeginTransaction())
             {
-                var ret =   _repository.Insert(entity);
+                var ret = _repository.Insert(entity);
 
                 if (transaction != null) _repository.Commit();
 

@@ -3,7 +3,7 @@ using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
 
-namespace Hub.Application.Search
+namespace Hub.Application.Corporate.Search
 {
     public class SearchDocumentType : ISearchItem
     {

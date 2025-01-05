@@ -1,7 +1,7 @@
 ﻿using Hangfire.Server;
 using Hangfire;
 
-namespace Hub.Application.Hangfire
+namespace Hub.Application.Corporate.Hangfire
 {
     public class HangfireTasks
     {

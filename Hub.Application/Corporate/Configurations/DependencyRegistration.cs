@@ -1,21 +1,23 @@
 ﻿using Autofac;
-using Hub.Application.Hangfire;
+using Hub.Application.Corporate.Hangfire;
 using Hub.Application.Services;
+using Hub.Application.Services.Users;
 using Hub.Domain.Administrator;
 using Hub.Domain.Entities;
+using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.DependencyInjection.Interfaces;
 using Hub.Infrastructure.Web.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Hub.Application.Configurations
+namespace Hub.Application.Corporate.Configurations
 {
     public class DependencyRegistration : IDependencyConfiguration
     {
-        public void Register(ContainerBuilder builder) 
+        public void Register(ContainerBuilder builder)
         {
             builder.RegisterType<HangfireStartup>().AsSelf().SingleInstance();
-            builder.RegisterType<HubTenantNameProvider>().AsSelf().SingleInstance();
+            builder.RegisterType<CorporateTenantProvider>().AsSelf().SingleInstance();
 
             #region SERVICES TENANTS
 

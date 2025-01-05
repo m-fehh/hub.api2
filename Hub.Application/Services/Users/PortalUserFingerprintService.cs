@@ -1,8 +1,8 @@
-﻿using Hub.Domain.Entities;
+﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Web;
 
-namespace Hub.Application.Services
+namespace Hub.Application.Services.Users
 {
     /// <summary>
     /// Serviço para armazenar informações diversas no momento do login

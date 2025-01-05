@@ -1,4 +1,4 @@
-﻿namespace Hub.Application.Configurations
+﻿namespace Hub.Application.Corporate.Configurations
 {
     public static class SystemConstants
     {

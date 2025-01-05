@@ -22,9 +22,10 @@ using Hub.Application.Models.Helpers;
 using Hub.Infrastructure.Architecture.OAuth;
 using Hub.Infrastructure.Database.Models;
 using System.Collections.Generic;
-using Hub.Application.Configurations;
+using Hub.Domain.Entities.Users;
+using Hub.Application.Corporate.Configurations;
 
-namespace Hub.Application.Services
+namespace Hub.Application.Services.Users
 {
     public class UserService : OrchestratorService<PortalUser>, ISecurityProvider
     {
@@ -133,7 +134,7 @@ namespace Hub.Application.Services
 
         public PortalUser CreateTempPassword(string userName)
         {
-            var user = base.Table.FirstOrDefault(u => u.Login == userName);
+            var user = Table.FirstOrDefault(u => u.Login == userName);
 
             if (user != null)
             {
@@ -349,7 +350,7 @@ namespace Hub.Application.Services
                             {
                                 logo = logo.Substring(2);
 
-                                qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Bitmap.FromFile(logo));
+                                qrCodeImage = qrCode.GetGraphic(20, Color.Black, Color.White, (Bitmap)Image.FromFile(logo));
                             }
 
                             if (logo.Contains("http"))
@@ -435,7 +436,7 @@ namespace Hub.Application.Services
 
                 if (currentUser == null)
                 {
-                    Infrastructure.Extensions.CookieExtensions.CleanCookies();
+                    CookieExtensions.CleanCookies();
                     HttpContextHelper.Current.Response.Redirect("~/Login", false);
                 }
 
@@ -456,7 +457,7 @@ namespace Hub.Application.Services
 
         public bool AuthenticateTemp(string userName, string tempPassword)
         {
-            var currentUser = base.Table.FirstOrDefault(u => u.Login == userName && u.TempPassword == tempPassword);
+            var currentUser = Table.FirstOrDefault(u => u.Login == userName && u.TempPassword == tempPassword);
 
             if (currentUser != null)
             {
@@ -484,7 +485,7 @@ namespace Hub.Application.Services
 
             Authenticate(model);
 
-            return (model.Token != null);
+            return model.Token != null;
         }
 
         public void Authenticate(AuthVM request)

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using Hub.Domain.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Hub.Domain.Entities
+namespace Hub.Domain.Entities.Users
 {
     [Table("Person")]
     public class Person : BaseEntity

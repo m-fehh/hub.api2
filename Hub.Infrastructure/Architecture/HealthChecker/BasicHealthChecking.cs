@@ -1,9 +1,7 @@
-﻿using Hub.Infrastructure.Architecture;
+﻿using Hub.Infrastructure.Architecture.HealthChecker.Builders;
 using Hub.Infrastructure.Architecture.HealthChecker.Enums;
 using Hub.Infrastructure.Architecture.HealthChecker.Interfaces;
 using Hub.Infrastructure.Database;
-using Hub.Infrastructure.HealthChecker;
-using Hub.Infrastructure.HealthChecker.Builders;
 
 namespace Hub.Infrastructure.Architecture.HealthChecker
 {
@@ -30,9 +28,7 @@ namespace Hub.Infrastructure.Architecture.HealthChecker
                 if (SimulateFail)
                 {
                     SimulateFail = false;
-                    return new CheckerContainerBuilder(this)
-                        .AddItem(new CheckerConfigItem("thisconfignotexists", EConfigValidationTypes.NullOrEmpty))
-                        .Build();
+                    return new CheckerContainerBuilder(this).AddItem(new CheckerConfigItem("thisconfignotexists", EConfigValidationTypes.NullOrEmpty)).Build();
                 }
 
                 return new CheckerContainerBuilder(this)
