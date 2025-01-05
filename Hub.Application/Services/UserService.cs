@@ -22,6 +22,7 @@ using Hub.Application.Models.Helpers;
 using Hub.Infrastructure.Architecture.OAuth;
 using Hub.Infrastructure.Database.Models;
 using System.Collections.Generic;
+using Hub.Application.Configurations;
 
 namespace Hub.Application.Services
 {
@@ -29,7 +30,7 @@ namespace Hub.Application.Services
     {
         public static AsyncLocal<UserContext> CurrentUserContext = new AsyncLocal<UserContext>();
         private const string TOKEN_KEY_USERID = ClaimTypes.NameIdentifier;
-        private const string TOKEN_KEY_USERPROFILEID = "profileId";
+        private const string TOKEN_KEY_USERPROFILEID = SystemConstants.TokenKeys.UserProfileId;
 
         private readonly IRedisService redisService;
         private readonly ITenantManager tenantManager;
