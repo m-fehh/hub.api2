@@ -7,6 +7,8 @@ using Hub.Infrastructure.Database.Models.Tenant;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Hub.Domain.Entities.Enterprise.Incorporation;
+using Hub.Infrastructure.Architecture;
 
 public class EntityDbContext : DbContext
 {
@@ -36,7 +38,6 @@ public class EntityDbContext : DbContext
 
     public DbSet<UserRole> UserRoles { get; set; } = null!;
 
-
     #endregion
 
     #region LOGS
@@ -47,6 +48,14 @@ public class EntityDbContext : DbContext
 
     #endregion
 
+    #region INCORPORATION
+
+    public DbSet<IncorporationEstablishment> IncorporationEstablishments { get; set; } = null!;
+
+    public DbSet<IncorporationEstablishmentConfig> IncorporationEstablishmentConfigs { get; set; } = null!;
+
+    #endregion
+
     #region ENTERPRISE
 
     public DbSet<OrganizationalStructure> OrganizationalStructures { get; set; } = null!;
@@ -54,6 +63,8 @@ public class EntityDbContext : DbContext
     public DbSet<OrganizationalStructureConfig> OrganizationalStructureConfigs { get; set; } = null!;
 
     public DbSet<OrgStructConfigDefault> OrgStructConfigDefaults { get; set; } = null!;
+
+    public DbSet<Establishment> Establishments { get; set; } = null!;
 
     #endregion
 
@@ -103,6 +114,18 @@ public class EntityDbContext : DbContext
             .HasOne(p => p.UserRole)
             .WithMany()
             .HasForeignKey(p => p.UserRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<IncorporationEstablishment>()
+            .HasOne(e => e.OrganizationalStructure)
+            .WithMany()
+            .HasForeignKey(e => e.OrganizationalStructureId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<IncorporationEstablishmentConfig>()
+            .HasOne(e => e.OrganizationalStructure)
+            .WithMany()
+            .HasForeignKey(e => e.OrganizationalStructureId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

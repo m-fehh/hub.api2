@@ -7,7 +7,7 @@ using Hub.Infrastructure.Database.Services;
 
 namespace Hub.Application.Corporate
 {
-    public class CorporateTenantProvider : IEntityNameProvider
+    public class CurrentTenantProvider : IEntityNameProvider
     {
         public static AsyncLocal<string> CurrentTenant = new AsyncLocal<string>();
 

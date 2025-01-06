@@ -66,7 +66,7 @@ builder.Host.ConfigureContainer<ContainerBuilder>(builder =>
 {
     Engine.Initialize(
         executingAssembly: Assembly.GetExecutingAssembly(),
-        nameProvider: new CorporateTenantProvider(),
+        nameProvider: new CurrentTenantProvider(),
         tasks:
         new List<IStartupTask>()
         {

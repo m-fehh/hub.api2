@@ -28,7 +28,7 @@ namespace Hub.Infrastructure.Database.MultiTenant
 
         public string? DbSchemaName => GetTenantConfiguration()?.Schema ?? null;
 
-        public string? ConnectionString => GetTenantConfiguration()?.ConnectionString ?? null;
+        public string? ConnectionString => GetTenantConfiguration()?.ConnectionString ?? Engine.ConnectionString("default");
 
         public List<Tenant> Tenants => _tenantConfigurations.Values.ToList();
 

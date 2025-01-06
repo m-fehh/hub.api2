@@ -16,7 +16,7 @@ namespace Hub.Web.Middlewares
         {
             var baseUrl = string.Format("{0}://{1}", context.Request.Scheme, context.Request.Host.Value);
 
-            Engine.Resolve<CorporateTenantProvider>().SetCurrentTenant(baseUrl);
+            Engine.Resolve<CurrentTenantProvider>().SetCurrentTenant(baseUrl);
 
             await _next(context);
         }

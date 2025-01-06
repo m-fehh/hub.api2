@@ -4,10 +4,12 @@ using Hub.Application.Corporate.Interfaces;
 using Hub.Application.Corporate.Manager;
 using Hub.Application.Services;
 using Hub.Application.Services.Enterprise;
+using Hub.Application.Services.Enterprise.Incorporation;
 using Hub.Application.Services.Users;
 using Hub.Domain.Administrator;
 using Hub.Domain.Entities;
 using Hub.Domain.Entities.Enterprise;
+using Hub.Domain.Entities.Enterprise.Incorporation;
 using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
@@ -25,7 +27,7 @@ namespace Hub.Application.Corporate.Configurations
             builder.RegisterType<AdminDbContext>().As<DbContext>().InstancePerLifetimeScope();
 
             builder.RegisterType<HangfireStartup>().AsSelf().SingleInstance();
-            builder.RegisterType<CorporateTenantProvider>().AsSelf().SingleInstance();
+            builder.RegisterType<CurrentTenantProvider>().AsSelf().SingleInstance();
             builder.RegisterType<PortalCacheManager>().AsSelf().SingleInstance();
             builder.RegisterType<PortalCacheRequest>().AsSelf().InstancePerLifetimeScope();
             builder.RegisterType<TimezoneManager>().As<ICurrentTimezone>().SingleInstance();
@@ -51,6 +53,12 @@ namespace Hub.Application.Corporate.Configurations
 
             builder.RegisterType<EstablishmentService>().As<IOrchestratorService<Establishment>>();
             builder.RegisterType<EstablishmentService>().AsSelf();
+
+            builder.RegisterType<IncorporationEstablishmentService>().As<IOrchestratorService<IncorporationEstablishment>>();
+            builder.RegisterType<IncorporationEstablishmentService>().AsSelf();
+
+            builder.RegisterType<IncorporationEstablishmentConfigService>().As<IOrchestratorService<IncorporationEstablishmentConfig>>();
+            builder.RegisterType<IncorporationEstablishmentConfigService>().AsSelf();
 
             builder.RegisterType<LogService>().AsSelf();
             builder.RegisterType<LoginService>().AsSelf();
