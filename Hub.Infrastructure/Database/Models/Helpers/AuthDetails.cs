@@ -1,6 +1,6 @@
-﻿namespace Hub.Infrastructure.Database.Models
+﻿namespace Hub.Infrastructure.Database.Models.Helpers
 {
-    public class Authentication
+    public class AuthDetails
     {
         public string UserName { get; private set; }
 
@@ -10,7 +10,7 @@
 
         public object FingerPrint { get; private set; }
 
-        public Authentication(string userName, string password, bool rememberMe, object fingerPrint = null)
+        public AuthDetails(string userName, string password, bool rememberMe, object fingerPrint = null)
         {
             UserName = userName;
             Password = password;
@@ -42,7 +42,7 @@
         }
     }
 
-    public class AuthVM
+    public class LoginCredentialsVM
     {
         public string Login { get; set; }
         public string Password { get; set; }

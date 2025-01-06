@@ -19,6 +19,8 @@ namespace Hub.Infrastructure.Database.Interfaces
 
         void Refresh(T entity);
 
+        object Refresh(object entity);
+
         T GetById(long id);
 
         T StatelessGetById(long id);

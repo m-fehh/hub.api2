@@ -1,5 +1,7 @@
 ﻿using Hub.Domain.Entities;
+using Hub.Domain.Entities.Enterprise;
 using Hub.Domain.Entities.Logs;
+using Hub.Domain.Entities.OrgStructure;
 using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Database.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +12,6 @@ public class EntityDbContext : DbContext
 {
     private readonly ITenantProvider _tenantProvider;
 
-
     #region CONFIGURATIONS SYSTEM 
 
     public DbSet<DocumentType> DocumentTypes { get; set; } = null!;
@@ -18,8 +19,6 @@ public class EntityDbContext : DbContext
     public DbSet<ProfileGroup> ProfileGroups { get; set; } = null!;
 
     public DbSet<AccessRule> AccessRules { get; set; } = null!;
-
-    
 
     #endregion
 
@@ -43,6 +42,15 @@ public class EntityDbContext : DbContext
 
     #endregion
 
+    #region ENTERPRISE
+
+    public DbSet<OrganizationalStructure> OrganizationalStructures { get; set; } = null!;
+
+    public DbSet<OrganizationalStructureConfig> OrganizationalStructureConfigs { get; set; } = null!;
+
+    public DbSet<OrgStructConfigDefault> OrgStructConfigDefaults { get; set; } = null!;
+
+    #endregion
 
     public EntityDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
     {

@@ -1,5 +1,7 @@
 ﻿using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
+using Hub.Infrastructure.Extensions;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,7 +17,7 @@ namespace Hub.Domain.Entities
         [StringLength(150)]
         public virtual string Name { get; set; }
 
-        [NotMapped]
+        [JsonConverter(typeof(ConcreteListTypeConverter<IAccessRule, AccessRule>))]
         public virtual ICollection<IAccessRule> Rules { get; set; }
 
         [Required]

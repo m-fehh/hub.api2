@@ -20,10 +20,11 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using Hub.Application.Models.Helpers;
 using Hub.Infrastructure.Architecture.OAuth;
-using Hub.Infrastructure.Database.Models;
-using System.Collections.Generic;
 using Hub.Domain.Entities.Users;
 using Hub.Application.Corporate.Configurations;
+using Hub.Application.Models.ViewModels;
+using Hub.Domain.Enums;
+using Hub.Infrastructure.Database.Models.Helpers;
 
 namespace Hub.Application.Services.Users
 {
@@ -472,9 +473,9 @@ namespace Hub.Application.Services.Users
         }
 
 
-        public bool Authenticate(Authentication authenticationVM)
+        public bool Authenticate(AuthDetails authenticationVM)
         {
-            var model = new AuthVM()
+            var model = new LoginCredentialsVM()
             {
                 Login = authenticationVM.UserName,
                 Password = authenticationVM.Password,
@@ -488,7 +489,7 @@ namespace Hub.Application.Services.Users
             return model.Token != null;
         }
 
-        public void Authenticate(AuthVM request)
+        public void Authenticate(LoginCredentialsVM request)
         {
             try
             {

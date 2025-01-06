@@ -1,11 +1,11 @@
 ﻿using Hub.Infrastructure.Database.Entity.Interfaces;
-using Hub.Infrastructure.Database.Models;
+using Hub.Infrastructure.Database.Models.Helpers;
 
 namespace Hub.Infrastructure.Architecture.Security.Interfaces
 {
     public interface ISecurityProvider
     {
-        bool Authenticate(Authentication authenticationVM);
+        bool Authenticate(AuthDetails authenticationVM);
 
         void Authenticate(string token);
 
@@ -13,8 +13,6 @@ namespace Hub.Infrastructure.Architecture.Security.Interfaces
 
         //List<string> GetAuthorizedRoles(List<string> roles);
         IUserAccount GetCurrent();
-
-        //void SetCurrentUser(IUser user);
 
         IProfileGroup GetCurrentProfile();
 

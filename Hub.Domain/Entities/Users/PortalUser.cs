@@ -1,6 +1,7 @@
 ﻿using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
-using System.Collections.Generic;
+using Hub.Infrastructure.Extensions;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -37,8 +38,8 @@ namespace Hub.Domain.Entities.Users
 
         public virtual long ProfileId { get; set; }
 
-        [NotMapped]
         [ForeignKey(nameof(ProfileId))]
+        [JsonConverter(typeof(ConcreteTypeConverter<ProfileGroup>))]
         public virtual IProfileGroup Profile { get; set; }
 
         [IgnoreLog]

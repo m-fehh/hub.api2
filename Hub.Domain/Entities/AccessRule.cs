@@ -1,7 +1,9 @@
 ﻿using Hub.Infrastructure.Database.Entity.Interfaces;
-using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
+using Hub.Infrastructure.Extensions;
+using Hub.Infrastructure.Database.Entity;
 
 namespace Hub.Domain.Entities
 {
@@ -13,8 +15,8 @@ namespace Hub.Domain.Entities
 
         public virtual long? ParentId { get; set; }
 
-        [NotMapped]
         [ForeignKey(nameof(ParentId))]
+        [JsonConverter(typeof(ConcreteTypeConverter<AccessRule>))]
         public virtual IAccessRule Parent { get; set; } 
 
 

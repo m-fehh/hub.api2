@@ -129,6 +129,39 @@ namespace Hub.Infrastructure.Database
             _context.Entry(entity).Reload();
         }
 
+        public object Refresh(object entity)
+        {
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
+
+            var entry = _context.Entry(entity);
+
+            if (entry.State == EntityState.Detached)
+            {
+                // Se a entidade estiver desconectada, tenta recarregar a entidade pelo ID
+                if (entity is IBaseEntity baseEntity && baseEntity.Id != 0)
+                {
+                    // Aqui você especifica explicitamente o tipo da entidade
+                    var setMethod = typeof(DbContext).GetMethod("Set").MakeGenericMethod(entity.GetType());
+                    var entitySet = setMethod.Invoke(_context, null);
+                    entity = entitySet.GetType().GetMethod("Find").Invoke(entitySet, new object[] { baseEntity.Id });
+                    entry = _context.Entry(entity);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Entity is detached and cannot be refreshed.");
+                }
+            }
+
+            // Realiza o reload da entidade
+            entry.Reload();
+
+            // Retorna a entidade recarregada
+            return entity;
+        }
+
+
+
+
         public void Delete(long id)
         {
             var entity = _context.Set<T>().Find(id);
