@@ -15,6 +15,7 @@ namespace Hub.Domain.Entities
 
         public virtual long? ParentId { get; set; }
 
+        [NotMapped]
         [ForeignKey(nameof(ParentId))]
         [JsonConverter(typeof(ConcreteTypeConverter<AccessRule>))]
         public virtual IAccessRule Parent { get; set; } 

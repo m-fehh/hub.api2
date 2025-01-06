@@ -1,9 +1,9 @@
 ﻿using Hub.Domain.Entities;
 using Hub.Domain.Entities.Enterprise;
 using Hub.Domain.Entities.Logs;
-using Hub.Domain.Entities.OrgStructure;
 using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Database.Interfaces;
+using Hub.Infrastructure.Database.Models.Tenant;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -24,13 +24,18 @@ public class EntityDbContext : DbContext
 
     #region USERS
 
-    public DbSet<PortalUser> PortalUsers { get; set; } = null!; 
+    public DbSet<PortalUser> PortalUsers { get; set; } = null!;
 
-    public DbSet<PortalUserPassHistory> PortalUserPassHistories { get; set; } = null!; 
+    public DbSet<PortalUserSetting> PortalUserSettings { get; set; } = null!;
 
-    public DbSet<PortalUserFingerprint> PortalUserFingerprints { get; set; } = null!; 
+    public DbSet<PortalUserPassHistory> PortalUserPassHistories { get; set; } = null!;
+
+    public DbSet<PortalUserFingerprint> PortalUserFingerprints { get; set; } = null!;
 
     public DbSet<Person> Persons { get; set; } = null!;
+
+    public DbSet<UserRole> UserRoles { get; set; } = null!;
+
 
     #endregion
 
@@ -83,6 +88,24 @@ public class EntityDbContext : DbContext
         // Configura o schema do tenant
         modelBuilder.HasDefaultSchema(_tenantProvider.DbSchemaName);
 
+        ConfigureEntities(modelBuilder);
+
         base.OnModelCreating(modelBuilder);
     }
+
+    /// <summary>
+    /// Configura as entidades relacionadas ao domínio de usuários.
+    /// </summary>
+    /// <param name="modelBuilder">Instância do ModelBuilder.</param>
+    private void ConfigureEntities(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PortalUser>()
+            .HasOne(p => p.UserRole)
+            .WithMany()
+            .HasForeignKey(p => p.UserRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }
+
+//add-migration "XXX" -Context EntityDbContext
+//Update-Database -Context EntityDbContext

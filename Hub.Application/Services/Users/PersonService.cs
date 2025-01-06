@@ -1,6 +1,7 @@
 ﻿using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Database.Interfaces;
+using Hub.Infrastructure.Database.Models.Tenant;
 using Hub.Infrastructure.Exceptions;
 using Hub.Infrastructure.Web;
 
@@ -38,11 +39,11 @@ namespace Hub.Application.Services.Users
         {
             ValidateInsert(entity);
 
-            using (var transaction = _repository.BeginTransaction())
+            using (var transaction = base._repository.BeginTransaction())
             {
-                var ret = _repository.Insert(entity);
+                var ret = base._repository.Insert(entity);
 
-                if (transaction != null) _repository.Commit();
+                if (transaction != null) base._repository.Commit();
 
                 return ret;
             }
@@ -52,61 +53,60 @@ namespace Hub.Application.Services.Users
         {
             Validate(entity);
 
-            using (var transaction = _repository.BeginTransaction())
+            using (var transaction = base._repository.BeginTransaction())
             {
-                _repository.Update(entity);
+                base._repository.Update(entity);
 
-                if (transaction != null) _repository.Commit();
+                if (transaction != null) base._repository.Commit();
             }
         }
 
         public override void Delete(long id)
         {
-            using (var transaction = _repository.BeginTransaction())
+            using (var transaction = base._repository.BeginTransaction())
             {
-                _repository.Delete(id);
+                base._repository.Delete(id);
 
-                if (transaction != null) _repository.Commit();
+                if (transaction != null) base._repository.Commit();
             }
         }
 
-        //public Person SavePerson(string document, string name, IList<OrganizationalStructure> structures, OrganizationalStructure ownerOrgStruct = null)
-        //{
-        //    if (string.IsNullOrEmpty(document)) return null;
+        public Person SavePerson(string document, string name, IList<OrganizationalStructure> structures, OrganizationalStructure ownerOrgStruct = null)
+        {
+            if (string.IsNullOrEmpty(document))
+            {
+                return null;
+            }
 
-        //    document = document.Replace(".", "").Replace("-", "").Replace("/", "");
+            document = document.Replace(".", "").Replace("-", "").Replace("/", "");
 
-        //    var person = Table.FirstOrDefault(p => p.Document == document);
+            Person person = Table.FirstOrDefault(p => p.Document == document);
 
-        //    if (person != null)
-        //    {
-        //        var schema = "sch" + Engine.Resolve<ITenantManager>().GetInfo().Id;
+            if (person != null)
+            {
+                person.OrganizationalStructures.Clear();
 
-        //        person.Name = name;
+                foreach (var structure in structures)
+                {
+                    person.OrganizationalStructures.Add(structure);
+                }
 
-        //        Update(person);
+                Update(person);
+            }
+            else
+            {
+                person = new Person()
+                {
+                    Document = document,
+                    Name = name,
+                    OrganizationalStructures = structures,
+                    OwnerOrgStruct = ownerOrgStruct
+                };
 
-        //        _repository.Flush();
+                Insert(person);
+            }
 
-        //        _repository.CreateSQLQuery($"exec {schema}.usp_SavePersonStructures :personId, :structures")
-        //            .SetParameter("personId", person.Id)
-        //            .SetParameter("structures", string.Join(",", structures.Select(s => s.Id).ToArray()))
-        //            .ExecuteUpdate();
-        //    }
-        //    else
-        //    {
-        //        person = new Person()
-        //        {
-        //            Document = document,
-        //            Name = name,
-        //            OrganizationalStructures = structures,
-        //            OwnerOrgStruct = ownerOrgStruct
-        //        };
-
-        //        Insert(person);
-        //    }
-
-        //    return person;
-        //}
+            return person;
+        }
     }
 }

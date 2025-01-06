@@ -1,6 +1,6 @@
-﻿using Hub.Domain.Entities.OrgStructure;
-using Hub.Infrastructure.Database.Entity;
+﻿using Hub.Infrastructure.Database.Entity;
 using Hub.Infrastructure.Database.Entity.Interfaces;
+using Hub.Infrastructure.Database.Models.Tenant;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

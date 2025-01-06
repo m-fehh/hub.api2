@@ -4,10 +4,10 @@ using Hub.Infrastructure.Database.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Hub.Domain.Entities.OrgStructure
+namespace Hub.Infrastructure.Database.Models.Tenant
 {
     [Table("OrganizationalStructure")]
-    public class OrganizationalStructure : BaseEntity, ILogableEntity, IModificationControl, IOrgStructure
+    public class OrganizationalStructure : BaseEntity, ILogableEntity, IModificationControl
     {
         [Key]
         public override long Id { get; set; }

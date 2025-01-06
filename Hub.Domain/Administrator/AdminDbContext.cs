@@ -53,5 +53,5 @@ namespace Hub.Domain.Administrator
 }
 
 
-//add-migration "XXX" -Context AdminDbContext'.
+//add-migration "XXX" -Context AdminDbContext.
 //Update-Database -Context AdminDbContext

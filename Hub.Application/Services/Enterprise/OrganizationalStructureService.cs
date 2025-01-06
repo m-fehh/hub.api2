@@ -1,6 +1,5 @@
 ﻿using Hub.Application.Services.Users;
 using Hub.Domain.Entities.Enterprise;
-using Hub.Domain.Entities.OrgStructure;
 using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture.Cache.Interfaces;
 using Hub.Infrastructure.Architecture.Cache;
@@ -10,17 +9,16 @@ using Hub.Infrastructure.Database.Entity.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
 using Hub.Infrastructure.Exceptions;
 using Hub.Infrastructure.Web;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Hub.Infrastructure.Architecture.Localization;
+using Hub.Infrastructure.Database.Models.Tenant;
+using Hub.Application.Corporate.Interfaces;
+using Hub.Application.Corporate.Manager;
+using Hub.Infrastructure.Database.Models.Helpers;
+using Hub.Infrastructure.Extensions;
 
 namespace Hub.Application.Services.Enterprise
 {
-    public class OrganizationalStructureService : OrchestratorService<OrganizationalStructure>
+    public class OrganizationalStructureService : OrchestratorService<OrganizationalStructure>, IOrganizationalStructureService
     {
         private static object locker = new object();
         private static long? currentOrgStructureIfNull;
@@ -47,7 +45,7 @@ namespace Hub.Application.Services.Enterprise
 
                     if (currentUser != null)
                     {
-                        //currentUser.OrganizationalStructures.Add(entity); TODO 
+                        currentUser.OrganizationalStructures.Add(entity);
 
                         Engine.Resolve<IRedisService>().Set($"UserOrgList{currentUser.Id}", null);
 
@@ -105,11 +103,10 @@ namespace Hub.Application.Services.Enterprise
 
         public bool IsLeafStructure(long? structId = null)
         {
-            // TODO
-            //if (structId == null)
-            //{
-            //    structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get().ToLong();
-            //}
+            if (structId == null)
+            {
+                structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get().ToLong();
+            }
 
             Func<long, bool> fn = (s) =>
             {
@@ -121,12 +118,10 @@ namespace Hub.Application.Services.Enterprise
 
         public bool IsDomainStructure(long? structId = null)
         {
-
-            //TODO
-            //if (structId == null)
-            //{
-            //    structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get().ToLong();
-            //}
+            if (structId == null)
+            {
+                structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get().ToLong();
+            }
 
 
             Func<long, bool> fn = (s) =>
@@ -139,11 +134,10 @@ namespace Hub.Application.Services.Enterprise
 
         public bool IsRootStructure(long? structId = null)
         {
-            //TODO
-            //if (structId == null)
-            //{
-            //    structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get().ToLong();
-            //}
+            if (structId == null)
+            {
+                structId = Engine.Resolve<IHubCurrentOrganizationStructure>().Get().ToLong();
+            }
 
             Func<long, bool> fn = (s) =>
             {
@@ -187,13 +181,12 @@ namespace Hub.Application.Services.Enterprise
             redisService.DeleteFromPattern($"CacheManager:OrganizationalStructureConfigs*{org.Id}_{name}*");
         }
 
-        // TODO
-        //public string GetCurrentConfigByName(string name)
-        //{
-        //    var currentLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+        public string GetCurrentConfigByName(string name)
+        {
+            var currentLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
 
-        //    return GetConfigByName(currentLevel.ToLong(), name);
-        //}
+            return GetConfigByName(currentLevel.ToLong(), name);
+        }
 
         public OrganizationalStructure GetFather(long childId)
         {
@@ -201,16 +194,14 @@ namespace Hub.Application.Services.Enterprise
             return father;
         }
 
-        //TODO
-        //public string GetConfigByNameFromRoot(string name)
-        //{
-        //    var service = Engine.Resolve<IHubCurrentOrganizationStructure>();
-        //    var root = service.GetCurrentRoot();
-        //    var configName = GetConfigByName(root, name);
-        //    return !string.IsNullOrWhiteSpace(configName) && configName != "-" ? configName : "";
-        //}
+        public string GetConfigByNameFromRoot(string name)
+        {
+            var service = Engine.Resolve<IHubCurrentOrganizationStructure>();
+            var root = service.GetCurrentRoot();
+            var configName = GetConfigByName(root, name);
+            return !string.IsNullOrWhiteSpace(configName) && configName != "-" ? configName : "";
+        }
 
-        //TODO
         //public Establishment GetCurrentEstablishment(string currentStringLevel = null)
         //{
         //    if (string.IsNullOrEmpty(currentStringLevel))
@@ -225,50 +216,49 @@ namespace Hub.Application.Services.Enterprise
         //    return Engine.Resolve<IRepository<Establishment>>().Table.Where(r => r.OrganizationalStructure.Id == currentLevel).FirstOrDefault();
         //}
 
-        public TimeZoneInfo GetCurrentEstablishmentTimeZone(string currentStringLevel = null)
-        {
-            Func<string, TimeZoneInfo> fn = (orgLevel) =>
-            {
-                var redisService = Engine.Resolve<IRedisService>();
+        //public TimeZoneInfo GetCurrentEstablishmentTimeZone(string currentStringLevel = null)
+        //{
+        //    Func<string, TimeZoneInfo> fn = (orgLevel) =>
+        //    {
+        //        var redisService = Engine.Resolve<IRedisService>();
 
-                var cachedTimeZone = redisService.Get($"TimeZone{orgLevel}").ToString();
+        //        var cachedTimeZone = redisService.Get($"TimeZone{orgLevel}").ToString();
 
-                if (!string.IsNullOrEmpty(cachedTimeZone))
-                {
-                    return TimeZoneInfo.FindSystemTimeZoneById(cachedTimeZone);
-                }
+        //        if (!string.IsNullOrEmpty(cachedTimeZone))
+        //        {
+        //            return TimeZoneInfo.FindSystemTimeZoneById(cachedTimeZone);
+        //        }
 
-                //var establishemnt = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishment(orgLevel);
+        //        var establishemnt = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishment(orgLevel);
 
-                //if (establishemnt != null && !string.IsNullOrEmpty(establishemnt.Timezone))
-                //{
-                //    redisService.Set($"TimeZone{orgLevel}", establishemnt.Timezone);
+        //        if (establishemnt != null && !string.IsNullOrEmpty(establishemnt.Timezone))
+        //        {
+        //            redisService.Set($"TimeZone{orgLevel}", establishemnt.Timezone);
 
-                //    return TimeZoneInfo.FindSystemTimeZoneById(establishemnt.Timezone);
-                //}
+        //            return TimeZoneInfo.FindSystemTimeZoneById(establishemnt.Timezone);
+        //        }
 
-                return null;
-            };
+        //        return null;
+        //    };
 
-            // TODO
-            //if (string.IsNullOrEmpty(currentStringLevel))
-            //{
-            //    var localcached = Engine.Resolve<PortalCacheManager>().Get().CurrentTimezone;
+        //    if (string.IsNullOrEmpty(currentStringLevel))
+        //    {
+        //        var localcached = Engine.Resolve<PortalCacheManager>().Get().CurrentTimezone;
 
-            //    if (!string.IsNullOrEmpty(localcached))
-            //    {
-            //        if (localcached == "-") return null;
+        //        if (!string.IsNullOrEmpty(localcached))
+        //        {
+        //            if (localcached == "-") return null;
 
-            //        return TimeZoneInfo.FindSystemTimeZoneById(localcached);
-            //    }
+        //            return TimeZoneInfo.FindSystemTimeZoneById(localcached);
+        //        }
 
-            //    currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
-            //}
+        //        currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+        //    }
 
-            if (string.IsNullOrEmpty(currentStringLevel)) return null;
+        //    if (string.IsNullOrEmpty(currentStringLevel)) return null;
 
-            return Engine.Resolve<CacheManager>().CacheAction(() => fn(currentStringLevel));
-        }
+        //    return Engine.Resolve<CacheManager>().CacheAction(() => fn(currentStringLevel));
+        //}
 
         //public void ChangeOwnerOrgStruct(string objectType, long objectId, long newOwnerOrgStructId)
         //{
@@ -325,26 +315,26 @@ namespace Hub.Application.Services.Enterprise
         /// </summary>
         /// <param name="structureId">unidade ou domínio em que se dejesa verificar a configuração</param>
         /// <returns><b>False</b> caso o parametro seja o dominio raiz, caso contrário, busca no banco de dados o valor da configuração da unidade.</returns>
-        //public bool ClientUseNickName(long structureId)
-        //{
-        //    if (structureId == 0)
-        //    {
-        //        return false;
-        //    }
+        public bool ClientUseNickName(long structureId)
+        {
+            if (structureId == 0)
+            {
+                return false;
+            }
 
-        //    var isCurrentOrgStructRoot = _repository.Table.Where(f => f.Id == structureId).Select(s => s.IsRoot).FirstOrDefault();
+            var isCurrentOrgStructRoot = _repository.Table.Where(f => f.Id == structureId).Select(s => s.IsRoot).FirstOrDefault();
 
-        //    if (isCurrentOrgStructRoot)
-        //    {
-        //        return false;
-        //    }
+            if (isCurrentOrgStructRoot)
+            {
+                return false;
+            }
 
-        //    var organizationStructure = Engine.Resolve<IHubCurrentOrganizationStructure>();
+            var organizationStructure = Engine.Resolve<IHubCurrentOrganizationStructure>();
 
-        //    var currentDomain = long.Parse(organizationStructure.GetCurrentDomain(structureId.ToString()));
+            var currentDomain = long.Parse(organizationStructure.GetCurrentDomain(structureId.ToString()));
 
-        //    return bool.Parse(GetConfigByName(currentDomain, "NicknameVisible"));
-        //}
+            return bool.Parse(GetConfigByName(currentDomain, "NicknameVisible"));
+        }
 
         /// <summary>
         /// Método responsável por gerar a árvore de estabelecimentos 
@@ -376,61 +366,61 @@ namespace Hub.Application.Services.Enterprise
         //    return rootList;
         //}
 
-//        public bool AllowChanges<TEntity>(TEntity entity, bool thowsException = true) where TEntity : IBaseEntity, IEntityOrgStructOwned
-//        {
-//            var repository = Engine.Resolve<IRepository<TEntity>>();
+        public bool AllowChanges<TEntity>(TEntity entity, bool thowsException = true) where TEntity : IBaseEntity, IEntityOrgStructOwned
+        {
+            var repository = Engine.Resolve<IRepository<TEntity>>();
 
-//            var currentOrgStruct = repository.Table.Where(e => e.Id == entity.Id).Select(e => e.OwnerOrgStruct).FirstOrDefault();
+            var currentOrgStruct = repository.Table.Where(e => e.Id == entity.Id).Select(e => e.OwnerOrgStruct).FirstOrDefault();
 
-//            var currentuserOrgIds = Engine.Resolve<UserService>().GetCurrentUserOrgList();
+            var currentuserOrgIds = Engine.Resolve<UserService>().GetCurrentUserOrgList();
 
-//            if (currentuserOrgIds != null)
-//            {
-//                if (currentOrgStruct != null && !currentuserOrgIds.Contains(currentOrgStruct.Id))
-//                {
-//                    if (thowsException)
-//                    {
-//#if DEBUG
-//                        return false;
-//#else
-//                        throw new BusinessException(Engine.Get("NotAllowedChangedBecauseOwnerOrgStruct"));
-//#endif
-//                    }
-//                    else
-//                    {
-//                        return false;
-//                    }
-//                }
-//            }
+            if (currentuserOrgIds != null)
+            {
+                if (currentOrgStruct != null && !currentuserOrgIds.Contains(currentOrgStruct.Id))
+                {
+                    if (thowsException)
+                    {
+#if DEBUG
+                        return false;
+#else
+                        throw new BusinessException(Engine.Get("NotAllowedChangedBecauseOwnerOrgStruct"));
+#endif
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
 
-//            entity.OwnerOrgStruct = currentOrgStruct;
+            entity.OwnerOrgStruct = currentOrgStruct;
 
-//            return true;
-//        }
+            return true;
+        }
 
-//        public void LinkOwnerOrgStruct(IEntityOrgStructOwned entity)
-//        {
-//            var currentLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+        public void LinkOwnerOrgStruct(IEntityOrgStructOwned entity)
+        {
+            var currentLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
 
-//            if (string.IsNullOrEmpty(currentLevel))
-//            {
-//                if (currentOrgStructureIfNull == null)
-//                {
-//                    throw new BusinessException(Engine.Get("SelectOrgStruct"));
-//                }
+            if (string.IsNullOrEmpty(currentLevel))
+            {
+                if (currentOrgStructureIfNull == null)
+                {
+                    throw new BusinessException(Engine.Get("SelectOrgStruct"));
+                }
 
-//                currentLevel = currentOrgStructureIfNull.ToString();
-//            }
+                currentLevel = currentOrgStructureIfNull.ToString();
+            }
 
-//            var orgStruct = GetById(long.Parse(currentLevel));
+            var orgStruct = GetById(long.Parse(currentLevel));
 
-//            if (orgStruct == null || orgStruct.Inactive)
-//            {
-//                throw new BusinessException(Engine.Get("SelectOrgStruct"));
-//            }
+            if (orgStruct == null || orgStruct.Inactive)
+            {
+                throw new BusinessException(Engine.Get("SelectOrgStruct"));
+            }
 
-//            entity.OwnerOrgStruct = orgStruct;
-//        }
+            entity.OwnerOrgStruct = orgStruct;
+        }
 
 
         #region PRIVATE METHODS
