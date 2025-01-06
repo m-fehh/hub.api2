@@ -15,7 +15,7 @@ namespace Hub.Infrastructure.Extensions
             return sb.ToString();
         }
 
-        private static void CreateExceptionString(StringBuilder sb, Exception e, string indent)
+        public static void CreateExceptionString(StringBuilder sb, Exception e, string indent)
         {
             if (indent == null)
             {

@@ -25,6 +25,18 @@ namespace Hub.Infrastructure.Extensions
             return html;
         }
 
+        public static string ReplaceMultiple(this string input, IEnumerable<string> patterns, Func<string, IEnumerable<string>> expandPatterns)
+        {
+            foreach (var pattern in patterns)
+            {
+                foreach (var expandedPattern in expandPatterns(pattern))
+                {
+                    input = input.Replace(expandedPattern, "");
+                }
+            }
+            return input;
+        }
+
         /// <summary>
         /// Função que não permite que o texto seja maior que o tamanho especificado. Se for, corta e retorna com reticencias
         /// </summary>
