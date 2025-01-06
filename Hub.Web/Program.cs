@@ -500,6 +500,7 @@ startupTasks.Add(Task.Run(() =>
     SearchBootstrapper.Initialize(new List<ISearchItem>()
     {
         new SearchDocumentType(),
+        new SearchPerson(),
     });
 
 }));

@@ -292,6 +292,21 @@
             return dateTime.AddTicks(halfIntervalTicks - ((dateTime.Ticks + halfIntervalTicks) % interval.Ticks));
         }
 
+        public static ESchedulePeriodOfDay GetPeriodOfDay(this DateTime date)
+        {
+            int AfternoonBreakpoint = 12;
+            int EveningBreakpoint = 18;
+
+            var hour = date.Hour;
+
+            if (hour < AfternoonBreakpoint)
+                return ESchedulePeriodOfDay.Morning;
+
+            if (hour >= AfternoonBreakpoint && hour < EveningBreakpoint)
+                return ESchedulePeriodOfDay.Afternoon;
+
+            return ESchedulePeriodOfDay.Evening;
+        }
     }
 
     public struct DateTimeRange
@@ -302,5 +317,12 @@
         {
             return Date1.EachDay(Date2).ToList();
         }
+    }
+
+    public enum ESchedulePeriodOfDay
+    {
+        Morning = 1,
+        Afternoon = 2,
+        Evening = 3,
     }
 }

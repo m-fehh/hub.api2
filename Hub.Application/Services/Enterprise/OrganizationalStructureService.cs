@@ -13,14 +13,12 @@ using Hub.Infrastructure.Architecture.Localization;
 using Hub.Infrastructure.Database.Models.Tenant;
 using Hub.Application.Corporate.Interfaces;
 using Hub.Application.Corporate.Manager;
-using Hub.Infrastructure.Database.Models.Helpers;
 using Hub.Infrastructure.Extensions;
 
 namespace Hub.Application.Services.Enterprise
 {
     public class OrganizationalStructureService : OrchestratorService<OrganizationalStructure>, IOrganizationalStructureService
     {
-        private static object locker = new object();
         private static long? currentOrgStructureIfNull;
 
         public OrganizationalStructureService(IRepository<OrganizationalStructure> repository) : base(repository) { }
@@ -196,9 +194,10 @@ namespace Hub.Application.Services.Enterprise
 
         public string GetConfigByNameFromRoot(string name)
         {
-            var service = Engine.Resolve<IHubCurrentOrganizationStructure>();
-            var root = service.GetCurrentRoot();
+            var root = Engine.Resolve<IHubCurrentOrganizationStructure>().GetCurrentRoot();
+
             var configName = GetConfigByName(root, name);
+
             return !string.IsNullOrWhiteSpace(configName) && configName != "-" ? configName : "";
         }
 
