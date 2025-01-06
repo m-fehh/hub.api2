@@ -202,63 +202,63 @@ namespace Hub.Application.Services.Enterprise
             return !string.IsNullOrWhiteSpace(configName) && configName != "-" ? configName : "";
         }
 
-        //public Establishment GetCurrentEstablishment(string currentStringLevel = null)
-        //{
-        //    if (string.IsNullOrEmpty(currentStringLevel))
-        //    {
-        //        currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
-        //    }
+        public Establishment GetCurrentEstablishment(string currentStringLevel = null)
+        {
+            if (string.IsNullOrEmpty(currentStringLevel))
+            {
+                currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+            }
 
-        //    if (string.IsNullOrEmpty(currentStringLevel)) return null;
+            if (string.IsNullOrEmpty(currentStringLevel)) return null;
 
-        //    var currentLevel = long.Parse(currentStringLevel);
+            var currentLevel = long.Parse(currentStringLevel);
 
-        //    return Engine.Resolve<IRepository<Establishment>>().Table.Where(r => r.OrganizationalStructure.Id == currentLevel).FirstOrDefault();
-        //}
+            return Engine.Resolve<IRepository<Establishment>>().Table.Where(r => r.OrganizationalStructure.Id == currentLevel).FirstOrDefault();
+        }
 
-        //public TimeZoneInfo GetCurrentEstablishmentTimeZone(string currentStringLevel = null)
-        //{
-        //    Func<string, TimeZoneInfo> fn = (orgLevel) =>
-        //    {
-        //        var redisService = Engine.Resolve<IRedisService>();
+        public TimeZoneInfo GetCurrentEstablishmentTimeZone(string currentStringLevel = null)
+        {
+            Func<string, TimeZoneInfo> fn = (orgLevel) =>
+            {
+                var redisService = Engine.Resolve<IRedisService>();
 
-        //        var cachedTimeZone = redisService.Get($"TimeZone{orgLevel}").ToString();
+                var cachedTimeZone = redisService.Get($"TimeZone{orgLevel}").ToString();
 
-        //        if (!string.IsNullOrEmpty(cachedTimeZone))
-        //        {
-        //            return TimeZoneInfo.FindSystemTimeZoneById(cachedTimeZone);
-        //        }
+                if (!string.IsNullOrEmpty(cachedTimeZone))
+                {
+                    return TimeZoneInfo.FindSystemTimeZoneById(cachedTimeZone);
+                }
 
-        //        var establishemnt = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishment(orgLevel);
+                var establishemnt = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishment(orgLevel);
 
-        //        if (establishemnt != null && !string.IsNullOrEmpty(establishemnt.Timezone))
-        //        {
-        //            redisService.Set($"TimeZone{orgLevel}", establishemnt.Timezone);
+                if (establishemnt != null && !string.IsNullOrEmpty(establishemnt.TimezoneIdentifier))
+                {
+                    redisService.Set($"TimeZone{orgLevel}", establishemnt.TimezoneIdentifier);
 
-        //            return TimeZoneInfo.FindSystemTimeZoneById(establishemnt.Timezone);
-        //        }
+                    return TimeZoneInfo.FindSystemTimeZoneById(establishemnt.TimezoneIdentifier);
+                }
 
-        //        return null;
-        //    };
+                return null;
+            };
 
-        //    if (string.IsNullOrEmpty(currentStringLevel))
-        //    {
-        //        var localcached = Engine.Resolve<PortalCacheManager>().Get().CurrentTimezone;
+            if (string.IsNullOrEmpty(currentStringLevel))
+            {
+                var localcached = Engine.Resolve<PortalCacheManager>().Get().CurrentTimezone;
 
-        //        if (!string.IsNullOrEmpty(localcached))
-        //        {
-        //            if (localcached == "-") return null;
+                if (!string.IsNullOrEmpty(localcached))
+                {
+                    if (localcached == "-") return null;
 
-        //            return TimeZoneInfo.FindSystemTimeZoneById(localcached);
-        //        }
+                    return TimeZoneInfo.FindSystemTimeZoneById(localcached);
+                }
 
-        //        currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
-        //    }
+                currentStringLevel = Engine.Resolve<IHubCurrentOrganizationStructure>().Get();
+            }
 
-        //    if (string.IsNullOrEmpty(currentStringLevel)) return null;
+            if (string.IsNullOrEmpty(currentStringLevel)) return null;
 
-        //    return Engine.Resolve<CacheManager>().CacheAction(() => fn(currentStringLevel));
-        //}
+            return Engine.Resolve<CacheManager>().CacheAction(() => fn(currentStringLevel));
+        }
 
         //public void ChangeOwnerOrgStruct(string objectType, long objectId, long newOwnerOrgStructId)
         //{

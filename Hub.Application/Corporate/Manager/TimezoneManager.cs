@@ -8,32 +8,31 @@ namespace Hub.Application.Corporate.Manager
 {
     public class TimezoneManager : ICurrentTimezone
     {
-        // TODO
-        //public TimeZoneInfo Get()
-        //{
-        //    var establishemntTimezone = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishmentTimeZone();
+        public TimeZoneInfo Get()
+        {
+            var establishemntTimezone = Engine.Resolve<OrganizationalStructureService>().GetCurrentEstablishmentTimeZone();
 
-        //    if (establishemntTimezone != null)
-        //    {
-        //        return establishemntTimezone;
-        //    }
+            if (establishemntTimezone != null)
+            {
+                return establishemntTimezone;
+            }
 
-        //    return TimeZoneInfo.Local;
-        //}
+            return TimeZoneInfo.Local;
+        }
 
-        //public string GetName()
-        //{
-        //    var current = Get().Id;
+        public string GetName()
+        {
+            var current = Get().Id;
 
-        //    if (TZConvert.TryWindowsToIana(current, out var iana))
-        //    {
-        //        return iana;
-        //    }
-        //    else
-        //    {
-        //        return current;
-        //    }
-        //}
+            if (TZConvert.TryWindowsToIana(current, out var iana))
+            {
+                return iana;
+            }
+            else
+            {
+                return current;
+            }
+        }
 
         public string GetServerName()
         {

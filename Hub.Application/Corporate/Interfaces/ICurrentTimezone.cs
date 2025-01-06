@@ -2,9 +2,9 @@
 {
     public interface ICurrentTimezone
     {
-        //TimeZoneInfo Get();
+        TimeZoneInfo Get();
 
-        //string GetName();
+        string GetName();
 
         string GetServerName();
 

@@ -1,4 +1,5 @@
-﻿using Hub.Infrastructure.Database.Models.Tenant;
+﻿using Hub.Domain.Entities.Enterprise;
+using Hub.Infrastructure.Database.Models.Tenant;
 
 namespace Hub.Application.Corporate.Interfaces
 {
@@ -22,6 +23,6 @@ namespace Hub.Application.Corporate.Interfaces
 
         //List<OrganizationalStructureTreeModelVM> GenerateTreeList(bool removeNotAccessOrg = true);
 
-        //Establishment GetCurrentEstablishment(string currentStringLevel = null);
+        Establishment GetCurrentEstablishment(string currentStringLevel = null);
     }
 }
