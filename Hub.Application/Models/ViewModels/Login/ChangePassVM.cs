@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Hub.Application.Models.ViewModels
+namespace Hub.Application.Models.ViewModels.Login
 {
     public class ChangePassVM
     {

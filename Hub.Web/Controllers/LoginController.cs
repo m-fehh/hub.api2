@@ -4,12 +4,11 @@ using Hub.Infrastructure.Database.Models.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shyjus.BrowserDetection;
-using Hub.Infrastructure.Extensions;
 using Hub.Application.Services.Users;
+using Hub.Application.Models.ViewModels.Login;
 using Hub.Infrastructure.Architecture.Security.Interfaces;
 using Hub.Infrastructure.Exceptions;
 using static QRCoder.PayloadGenerator.WiFi;
-using Hub.Application.Models.ViewModels;
 
 namespace Hub.Web.Controllers
 {
@@ -127,57 +126,156 @@ namespace Hub.Web.Controllers
             return PartialView(new ChangePassVM() { Login = login });
         }
 
-        //[HttpPost]
-        //[AllowAnonymous]
-        //public ActionResult SaveChangePass(ChangePassVM loginVM)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            if (loginVM.ConfirmPassword != loginVM.NewPassword)
-        //            {
-        //                ModelState.AddModelError("", Engine.Get("PasswordDoesNotMatchConfirmation"));
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<ActionResult> Index(LoginVM loginVM)
+        {
+            SetBaseURL();
+            var elosAuthProvider = GetAuthProvider();
+            //LinkLogotipo();
 
-        //                return Json(new
-        //                {
-        //                    Callback = "$('.modal.active .modal-content').html('" + this.RenderPartialToString("ChangePass", loginVM).MinifierHtml() + @"');"
-        //                });
-        //            }
+            //if (loginVM.IsProvider ?? false)
+            //{
+            //    var evupService = Engine.Resolve<EvupUserService>();
 
-        //            var securityProvider = (UserService)Engine.Resolve<ISecurityProvider>();
+            //    try
+            //    {
+            //        var evupModel = await evupService.ConfirmIdentity(loginVM);
 
-        //            securityProvider.ChangePass(loginVM.Login, loginVM.OldPassword, loginVM.NewPassword);
+            //        evupService.Authenticate(evupModel);
 
-        //            var authenticationVM = new AuthenticationVM(loginVM.Login, loginVM.NewPassword, false);
-        //            securityProvider.Authenticate(authenticationVM);
+            //        return Redirect("~/");
+            //    }
+            //    catch (BusinessException ex)
+            //    {
+            //        ModelState.AddModelError("", ex.Message);
 
-        //            return Json(new
-        //            {
-        //                Message = Engine.Get("PasswordChangeSuccessful"),
-        //                Callback = "window.location = $App.resolveUrl('~/');"
-        //            });
-        //        }
-        //        catch (BusinessException ex)
-        //        {
-        //            ModelState.AddModelError("", ex.Message);
+            //        loginVM.IsEvupProvider = false;
 
-        //            return Json(new
-        //            {
-        //                Callback = "$('.modal.active .modal-content').html('" + this.RenderPartialToString("ChangePass", loginVM).MinifierHtml() + @"');"
-        //            });
-        //        }
-        //    }
-        //    else
-        //    {
-        //        return Json(new
-        //        {
-        //            Callback = "$('.modal.active .modal-content').html('" + this.RenderPartialToString("ChangePass", loginVM).MinifierHtml() + @"');"
-        //        });
-        //    }
-        //}
+            //        return View(loginVM);
+            //    }
+            //}
 
-        void SetBaseURL()
+            //if (elosAuthProvider == EPortalAuthProvider.ETrust)
+            //{
+            //    ViewBag.AuthProviderUrl = Engine.AppSettings["etrust-sso-url"];
+
+            //    return View("~/Views/Login/Auth.cshtml");
+            //}
+
+            if (ModelState.IsValid)
+            {
+                var securityProvider = (ISecurityProvider)Engine.Resolve<ISecurityProvider>();
+
+                try
+                {
+                    //string recaptchaResponse = null;
+
+                    //if (Request.Form.ContainsKey("g-recaptcha-response"))
+                    //{
+                    //    recaptchaResponse = Request.Form["g-recaptcha-response"].ToString();
+                    //}
+
+                    //Engine.Resolve<GoogleRecaptchaService>().Validate(recaptchaResponse);
+
+                    var fingerPrint = GetFingerPrint(loginVM.FingerPrint);
+                    var authenticationVM = new AuthDetails(loginVM.Login, loginVM.Password, loginVM.RememberMe, fingerPrint);
+
+                    var authenticated = securityProvider.Authenticate(authenticationVM);
+
+                    if (authenticated)
+                    {
+                        return Redirect("~/");
+                    }
+                }
+                catch (RecaptchaException rex)
+                {
+                    ModelState.AddModelError("", rex.Message);
+                }
+                catch (BusinessException ex)
+                {
+                    try
+                    {
+                        if (ex.Message == Engine.Get("usuario_inativo"))
+                        {
+                            ModelState.AddModelError("", ex.Message);
+                        }
+                        else if (ex.Message == Engine.Get("senha_expirada") || (ex.Message == Engine.Get("Usuario_Senha_Expirada")))
+                        {
+                            ModelState.AddModelError("", ex.Message);
+                            loginVM.ChangePassTemporary = true;
+                        }
+                        else
+                        {
+                            //loginVM.ChangePassTemporary = securityProvider.AuthenticateTemp(loginVM.Login, loginVM.Password);
+
+                            //if (!loginVM.ChangePassTemporary)
+                            //{
+                            //    ModelState.AddModelError("", ex.Message);
+                            //}
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        ModelState.AddModelError("", e.Message);
+                    }
+                }
+            }
+
+            return View(loginVM);
+        }
+
+            //[HttpPost]
+            //[AllowAnonymous]
+            //public ActionResult SaveChangePass(ChangePassVM loginVM)
+            //{
+            //    if (ModelState.IsValid)
+            //    {
+            //        try
+            //        {
+            //            if (loginVM.ConfirmPassword != loginVM.NewPassword)
+            //            {
+            //                ModelState.AddModelError("", Engine.Get("PasswordDoesNotMatchConfirmation"));
+
+            //                return Json(new
+            //                {
+            //                    Callback = "$('.modal.active .modal-content').html('" + this.RenderPartialToString("ChangePass", loginVM).MinifierHtml() + @"');"
+            //                });
+            //            }
+
+            //            var securityProvider = (UserService)Engine.Resolve<ISecurityProvider>();
+
+            //            securityProvider.ChangePass(loginVM.Login, loginVM.OldPassword, loginVM.NewPassword);
+
+            //            var authenticationVM = new AuthenticationVM(loginVM.Login, loginVM.NewPassword, false);
+            //            securityProvider.Authenticate(authenticationVM);
+
+            //            return Json(new
+            //            {
+            //                Message = Engine.Get("PasswordChangeSuccessful"),
+            //                Callback = "window.location = $App.resolveUrl('~/');"
+            //            });
+            //        }
+            //        catch (BusinessException ex)
+            //        {
+            //            ModelState.AddModelError("", ex.Message);
+
+            //            return Json(new
+            //            {
+            //                Callback = "$('.modal.active .modal-content').html('" + this.RenderPartialToString("ChangePass", loginVM).MinifierHtml() + @"');"
+            //            });
+            //        }
+            //    }
+            //    else
+            //    {
+            //        return Json(new
+            //        {
+            //            Callback = "$('.modal.active .modal-content').html('" + this.RenderPartialToString("ChangePass", loginVM).MinifierHtml() + @"');"
+            //        });
+            //    }
+            //}
+
+            void SetBaseURL()
         {
             ViewBag.CurrentURL = string.Format("{0}://{1}", HttpContext.Request.Scheme, HttpContext.Request.Host.Value);
         }

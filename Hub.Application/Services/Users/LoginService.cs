@@ -1,4 +1,5 @@
-﻿using Hub.Domain.Entities.Users;
+﻿using Hub.Application.Models.ViewModels.Login;
+using Hub.Domain.Entities.Users;
 using Hub.Infrastructure.Architecture;
 using Hub.Infrastructure.Architecture.OAuth.Interfaces;
 using Hub.Infrastructure.Database.Interfaces;
@@ -12,7 +13,7 @@ namespace Hub.Application.Services.Users
     {
         public string AuthenticateUser(LoginVM model)
         {
-            if (string.IsNullOrEmpty(model.Username))
+            if (string.IsNullOrEmpty(model.Login))
             {
                 throw new BusinessException(Engine.Get("UsernameCannotBeNull"));
             }
@@ -29,7 +30,7 @@ namespace Hub.Application.Services.Users
         string GenerateUserToken(LoginVM model)
         {
             var password = model.Password.EncodeSHA1();
-            var user = Engine.Resolve<IRepository<PortalUser>>().Table.FirstOrDefault(x => x.Login == model.Username && x.Password == password);
+            var user = Engine.Resolve<IRepository<PortalUser>>().Table.FirstOrDefault(x => x.Login == model.Login && x.Password == password);
 
             if (user == null)
             {
@@ -71,12 +72,6 @@ namespace Hub.Application.Services.Users
 
             return token;
         }
-    }
-
-    public class LoginVM
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
     }
 
     public class LoginResponseVM

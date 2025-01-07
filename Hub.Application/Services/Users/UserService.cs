@@ -31,6 +31,7 @@ using System.Text.RegularExpressions;
 using Hub.Application.Corporate.Handler;
 using Hub.Application.Corporate.Manager;
 using Hub.Application.Corporate.Interfaces;
+using Hub.Application.Models.ViewModels.Login;
 
 namespace Hub.Application.Services.Users
 {
@@ -915,7 +916,7 @@ namespace Hub.Application.Services.Users
         {
             try
             {
-                var token = Engine.Resolve<LoginService>().AuthenticateUser(new LoginVM { Username = request.Login, Password = request.Password });
+                var token = Engine.Resolve<LoginService>().AuthenticateUser(new LoginVM { Login = request.Login, Password = request.Password });
 
                 var tokenResult = Engine.Resolve<IAccessTokenProvider>().ValidateToken(token);
 

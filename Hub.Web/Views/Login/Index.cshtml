@@ -1,1 +1,45 @@
-﻿
+﻿﻿@{
+    Layout = null;
+}
+
+@using Hub.Infrastructure.Architecture
+@using Hub.Infrastructure.Extensions;
+@model Hub.Application.Models.ViewModels.Login.LoginVM;
+
+<title>Login - Trainly 🖖</title>
+<link rel="icon" href="/images/logo-light.svg" type="image/png">
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="~/Content/portal/css/themes.css" /> 
+<link rel="stylesheet" href="~/Content/login-page/style.css" />
+
+
+
+@using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "form-vertical login-form" }))
+{
+    <p>
+        <label for="login">Email:</label>
+        @* <input type="text" name="login" id="login"> *@
+        @Html.MTextBoxFor(m => m.Login, new Dictionary<string, object>() { { "class", "form-control placeholder-no-fix" }, { "placeholder", Engine.Get("Login") } })
+
+    </p>
+
+    <p>
+        <label for="password">Password:</label>
+        @* <input type="password" name="password" id="password"> *@
+        @Html.MPasswordFor(m => m.Password, new Dictionary<string, object>() { { "class", "form-control placeholder-no-fix" }, { "autocomplete", "off" }, { "placeholder", @Engine.Get("Password") } })
+
+    </p>
+
+    <p class="login-submit">
+        <button type="submit" class="login-button">Login</button>
+    </p>
+
+    <p class="forgot-password"><a href="index.html">Forgot your password?</a></p>
+}
+
+
+
+<script src="~/Content/login-page/script.js"></script>
