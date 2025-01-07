@@ -378,8 +378,7 @@ app.UseStatusCodePages(context =>
     var request = context.HttpContext.Request;
     var response = context.HttpContext.Response;
 
-    if (response.StatusCode == (int)HttpStatusCode.Unauthorized &&
-        !request.Path.StartsWithSegments(new PathString("/Api")))
+    if (response.StatusCode == (int)HttpStatusCode.Unauthorized && !request.Path.StartsWithSegments(new PathString("/Api")))
     {
         response.Redirect("/Login");
     }

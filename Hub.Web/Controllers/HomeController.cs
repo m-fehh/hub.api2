@@ -1,10 +1,13 @@
-using Hub.Web.Models;
+using Hub.Application.Services.Users;
+using Hub.Infrastructure.Architecture.Cache;
+using Hub.Infrastructure.Architecture;
+using Hub.Infrastructure.Database.Interfaces;
+using Hub.Infrastructure.Web.Controllers;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace Hub.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -13,20 +16,25 @@ namespace Hub.Web.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        void SetBaseURL()
         {
+            ViewBag.CurrentURL = string.Format("{0}://{1}", HttpContext.Request.Scheme, HttpContext.Request.Host.Value);
+        }
+
+        [OutputCache(Duration = 600, VaryByCustom = CacheManager.UserLevel)]
+        public ActionResult Index()
+        {
+            Engine.Resolve<UserService>().RegisterAccess();
+
+            SetBaseURL();
+
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public JsonResult GetVersion()
         {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return Json(Engine.AppSettings["system_version"]);
         }
     }
 }
