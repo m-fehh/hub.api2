@@ -17,18 +17,16 @@
 
 
 
-@using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "form-vertical login-form" }))
+@* @using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "form-vertical login-form" }))
 {
     <p>
         <label for="login">Email:</label>
-        @* <input type="text" name="login" id="login"> *@
         @Html.MTextBoxFor(m => m.Login, new Dictionary<string, object>() { { "class", "form-control placeholder-no-fix" }, { "placeholder", Engine.Get("Login") } })
 
     </p>
 
     <p>
         <label for="password">Password:</label>
-        @* <input type="password" name="password" id="password"> *@
         @Html.MPasswordFor(m => m.Password, new Dictionary<string, object>() { { "class", "form-control placeholder-no-fix" }, { "autocomplete", "off" }, { "placeholder", @Engine.Get("Password") } })
 
     </p>
@@ -39,6 +37,37 @@
 
     <p class="forgot-password"><a href="index.html">Forgot your password?</a></p>
 }
+ *@
+
+
+<div class="container">
+    <h2>Have an account?</h2>
+    <p>Log in to see all your collection.</p>
+    <div class="cube" id="cube">
+        <div class="front" onclick="next('');">
+            Login
+        </div>
+        <div class="top">
+            <i class="fa fa-key"></i>
+            <input type="password" id="password" placeholder="password">
+            <button onclick="next('password');"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+        <div class="back">
+            <i class="fa fa-user"></i>
+            <input type="text" id="username" placeholder="username">
+            <button onclick="next('username');"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+        <div class="bottom">
+            <div class="loading-animation">
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+                <div class="box"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
