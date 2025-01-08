@@ -17,34 +17,11 @@
 
 
 
-@* @using (Html.BeginForm("Index", "Login", FormMethod.Post, new { @class = "form-vertical login-form" }))
-{
-    <p>
-        <label for="login">Email:</label>
-        @Html.MTextBoxFor(m => m.Login, new Dictionary<string, object>() { { "class", "form-control placeholder-no-fix" }, { "placeholder", Engine.Get("Login") } })
-
-    </p>
-
-    <p>
-        <label for="password">Password:</label>
-        @Html.MPasswordFor(m => m.Password, new Dictionary<string, object>() { { "class", "form-control placeholder-no-fix" }, { "autocomplete", "off" }, { "placeholder", @Engine.Get("Password") } })
-
-    </p>
-
-    <p class="login-submit">
-        <button type="submit" class="login-button">Login</button>
-    </p>
-
-    <p class="forgot-password"><a href="index.html">Forgot your password?</a></p>
-}
- *@
-
-
 <div class="container">
     <h2>Have an account?</h2>
     <p>Log in to see all your collection.</p>
     <div class="cube" id="cube">
-        <div class="front" onclick="next('');">
+        <div class="front" tabindex="0" id="loginBtn" onclick="next('');">
             Login
         </div>
         <div class="top">
@@ -68,7 +45,6 @@
         </div>
     </div>
 </div>
-
 
 
 <script src="~/Content/login-page/script.js"></script>
